@@ -5,7 +5,7 @@ capability, tested against nucula firmware** — and later wallet-vs-wallet.
 
 ## Why
 
-The bench Samsung S20 FE (labgrid place `phone-s20`, adb-driven) is a full
+The bench Samsung S20 FE (adb-driven via its labgrid place) is a full
 NFC peer: wallet apps bring HCE tag emulation (device reads phone) and/or
 reader mode (phone reads device). Putting a phone and a nucula board in
 the same field exercises the REAL interop surface — other wallets'
@@ -37,5 +37,5 @@ critical path: phone↔nucula flows never write the ACR's emulated memory.
 ## Conventions
 
 Read AGENTS.md. Bench hardware through labgrid places only
-(coordinator ai-legion:20408); state changes end with a conwrt-lab
+(the bench labgrid coordinator); state changes end with a conwrt-lab
 registry commit. Secrets never enter commits.

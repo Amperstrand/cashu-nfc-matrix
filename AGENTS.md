@@ -7,14 +7,14 @@ behavior, we never modify them.
 
 ## The phone is the peer
 
-- Place `phone-s20` (Samsung S20 FE, adb serial RF8NB01ZYAH, cashu.me
-  v0.2.0 installed). Phone↔nucula NFC flows do NOT involve the ACR1252U —
+- The bench phone place (Samsung S20 FE, cashu.me v0.2.0 installed;
+  place name and adb serial live in the internal bench registry). Phone↔nucula NFC flows do NOT involve the ACR1252U —
   its CCID-write wedge rules (see nucula AGENTS.md) apply only when a
   suite explicitly drives the ACR. If a suite ever does: ONE CE scenario
   per power cycle, full stop.
 - cashu.me sets FLAG_SECURE: screenshots are black — drive via
-  `uiautomator dump` + text-bounds taps (helper pattern:
-  /root/src/worktrees/phone_flow.py on the bench).
+  `uiautomator dump` + text-bounds taps (helper pattern lives
+  in the internal bench toolbox).
 - Token hand-off to the phone: bench-served browser-link page on :8077
   (ufw open from bench LAN). `adb input text` / `am start -d` TRUNCATE
   ~400-char tokens — never use them for tokens.
@@ -26,7 +26,7 @@ behavior, we never modify them.
 
 ## Bench discipline
 
-- All hardware through labgrid (coordinator ai-legion:20408); acquire/
+- All hardware through labgrid (address in the internal bench registry); acquire/
   release per suite; AB-BA bench-lock protocol shared with bolty-rs /
   micronuts / nucula lanes (flock before place, never reversed).
 - Anything you did not start is not yours to kill.

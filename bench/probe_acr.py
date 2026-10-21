@@ -24,15 +24,81 @@ def _alarm(signum, frame):
     raise TransmitTimeout("transmit watchdog fired")
 
 
-def get_acr():
-    cands = [x for x in readers() if "ACR1252" in str(x) and "PICC" in str(x)]
+def get_acr(subst: str = "ACR1252"):
+    cands = [x for x in readers() if subst in str(x)]
     if not cands:
-        raise RuntimeError("ACR1252 PICC not present in pcscd")
+        raise RuntimeError(f"reader matching {subst!r} not present in pcscd")
     return cands[0]
 
 
-def probe(aids: list[tuple[str, list[int]]], follow_ndef: bool = True) -> int:
-    r = get_acr()
+def read_ndef_request(subst: str = "ACR1252") -> dict:
+    """Connect + full Type-4 read; return parsed info (raises on hard failure)."""
+    r = get_acr(subst)
+    t0 = time.monotonic()
+    c = r.createConnection()
+    c.connect()
+    connect_s = time.monotonic() - t0
+    atr = " ".join(f"{b:02x}" for b in c.getATR())
+    proto = c.getProtocol()
+
+    def tx(apdu):
+        old = signal.signal(signal.SIGALRM, _alarm)
+        signal.alarm(15)
+        try:
+            d, s1, s2 = c.transmit(apdu, proto)
+            return bytes(d), s1, s2
+        finally:
+            signal.alarm(0)
+            signal.signal(signal.SIGALRM, old)
+
+    out = {"atr": atr, "connect_s": round(connect_s, 3)}
+    d, s1, s2 = tx([0x00, 0xA4, 0x04, 0x00, 0x07, 0xD2, 0x76, 0x00, 0x00, 0x85, 0x01, 0x01, 0x00])
+    out["select_aid_sw"] = f"{s1:02x}{s2:02x}"
+    if (s1, s2) != (0x90, 0x00):
+        return out
+    tx([0x00, 0xA4, 0x00, 0x0C, 0x02, 0xE1, 0x03])
+    d, s1, s2 = tx([0x00, 0xB0, 0x00, 0x00, 0x0F])
+    out["cc"] = d.hex()
+    if (s1, s2) != (0x90, 0x00):
+        return out
+    t1 = time.monotonic()
+    d, s1, s2 = tx([0x00, 0xA4, 0x00, 0x0C, 0x02, 0xE1, 0x04])
+    out["select_ndef_sw"] = f"{s1:02x}{s2:02x}"
+    if (s1, s2) != (0x90, 0x00):
+        return out
+    file = b""
+    off = 0
+    total = 1 << 20
+    while len(file) < total:
+        d, s1, s2 = tx([0x00, 0xB0, (off >> 8) & 0xFF, off & 0xFF, 0x20])
+        if (s1, s2) != (0x90, 0x00) or not d:
+            break
+        if off == 0 and len(d) >= 2:
+            total = ((d[0] << 8) | d[1]) + 2
+        file += bytes(d)
+        off += len(d)
+    out["read_s"] = round(time.monotonic() - t1, 3)
+    out["ndef_hex"] = file.hex()
+    out["ndef_len"] = len(file)
+    try:
+        import os
+        import sys
+        sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        from bench.ndef import parse_text_record, decode_creq
+
+        text = parse_text_record(file)
+        out["ndef_text"] = text
+        if text.startswith("creqA"):
+            out["creq"] = decode_creq(text)
+        else:
+            out["creq_raw_prefix"] = text[:48]
+    except Exception as e:
+        out["parse_error"] = repr(e)
+    return out
+
+
+def probe(aids: list[tuple[str, list[int]]], follow_ndef: bool = True, subst: str = "ACR1252") -> int:
+    r = get_acr(subst)
     t0 = time.monotonic()
     c = r.createConnection()
     c.connect()
@@ -121,7 +187,13 @@ def probe(aids: list[tuple[str, list[int]]], follow_ndef: bool = True) -> int:
 
 
 if __name__ == "__main__":
+    import sys as _sys
+
     AID_NDEF = [0xD2, 0x76, 0x00, 0x00, 0x85, 0x01, 0x01]
     AID_BOLTCARD_ASCII = [0xA0, 0x00, 0x00, 0x04] + [ord(ch) for ch in "qnula"]
     AID_NUCULA_ASCII = [0xA0, 0x00, 0x00, 0x04] + [ord(ch) for ch in "nucula"]
-    sys.exit(probe([("NDEF", AID_NDEF), ("boltcard-ascii", AID_BOLTCARD_ASCII), ("nucula-ascii", AID_NUCULA_ASCII)]))
+    subst = "ACR1252"
+    args = [a for a in _sys.argv[1:] if not a.startswith("--")]
+    if "--nucula" in _sys.argv:
+        subst = "Nucula CCID"
+    _sys.exit(probe([("NDEF", AID_NDEF), ("boltcard-ascii", AID_BOLTCARD_ASCII), ("nucula-ascii", AID_NUCULA_ASCII)], subst=subst))

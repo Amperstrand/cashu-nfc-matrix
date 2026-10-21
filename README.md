@@ -13,13 +13,18 @@ quirks, timing, NDEF/Type-4 layouts — with zero custom hardware. The
 ACR1252U wedge (and the switched-hub workaround) drops out of the
 critical path: phone↔nucula flows never write the ACR's emulated memory.
 
-## Matrix (living table — the first milestone fills this in)
+## Matrix (living table — updated 2026-10-21/22 wallet-matrix session; evidence in bench/PROTOCOL.md + run logs)
 
 | Wallet | Platform | NFC mode | vs nucula CE (phone reads) | vs nucula reader (phone presents) | Status |
 |---|---|---|---|---|---|
-| cashu.me v0.2.0 (cashubtc/wallet) | native Android | HCE (AID D2760000850101) + deep-link receive | TBD | proven path (bench 2026-10-17) | driver in progress |
-| minibits | PWA (Chrome) | WebNFC read (NDEFReader); HCE not available to PWAs | TBD | n/a (read-only) | inventory |
-| …more wallets | | | | | inventory |
+| cashu.me v0.2.0 (cashubtc/wallet) | native Android (Capacitor) | HCE Type-4 NDEF, AID D2760000850101; armed=request+amount; accepts token write-back (cashuA/B, crawB MIME); reader mode on Send→Tap | pending nucula-CE presentation | **protocol GO** (bench/PROTOCOL.md), **bench NO-GO**: phone sits on ACR antenna, not PN7160 (manual move needed); ACR read of HCE PROVEN 2026-10-21 (creqA live-decoded) | driver + probe done (drivers/, bench/) |
+| Numo v1.9 (cashubtc/Numo, PoS) | native Android | HCE Type-4 NDEF armed on Charge screen; request = `BITCOIN:?CREQ=creqB(bech32)`; CC byte-identical to cashu.me | n/a (it IS the receiver side) | same geometry constraint; ACR read PROVEN live (117B NDEF, 2026-10-21) | onboarded + probed |
+| minibits v0.4.5-beta.1 (minibits-cash) | React Native (play/zapstore/github) | reader (reads requests, pays + writes token back) + HCE share (dynamic registration via react-native-hce; `requireDeviceUnlock=false`) | TBD | TBD | installed; onboarding BLOCKED at Terms fetch — phone-side egress filter on bench AP suspected (host 200, phone fail; Nostr relays blocked likewise) |
+| eNuts (cashubtc/eNuts) | React Native (TestFlight/alpha) | NFC reader per enuts.cash ("QR and NFC ready"); HCE TBD | TBD | TBD | inventory only (alpha rebuild in flight; APK = v1.0.0-alpha.2) |
+| dev.boltcard.hce + com.amperstrand.boltcard.hce (bench apps) | native | HCE on NDEF AID (boltcard URI) | n/a | conflicts with wallets on D2760000850101 (AppChooser popup + SELECT hang) | both DISABLED during wallet-matrix window; restore at session end |
+
+NFC-capable but not Android-reachable per Numo's compatibility list: Sovran (iOS),
+Macadamia (iOS). Phoenix listed as tap-to-pay compatible (ecash support unverified).
 
 ## Layout (planned)
 

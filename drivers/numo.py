@@ -17,10 +17,7 @@ class NumoDriver:
         self.serial = serial
 
     def launch(self) -> None:
-        ui.adb(self.serial, "shell", "am", "force-stop", self.package)
-        time.sleep(0.8)
-        ui.adb(self.serial, "shell", "monkey", "-p", self.package,
-               "-c", "android.intent.category.LAUNCHER", "1")
+        ui.launch_app(self.serial, self.package)
         # onboarding guard: if the wallet-setup flow shows, run through it
         # (fresh-install only; leaves default mint, zero funds)
         time.sleep(4)

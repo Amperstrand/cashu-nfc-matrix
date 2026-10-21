@@ -1,0 +1,21 @@
+{
+ "atr": "3b 88 80 01 00 00 00 00 80 81 71 00 79",
+ "connect_s": 0.049,
+ "select_aid_sw": "9000",
+ "cc": "000f20003b00340406e10470ff0000",
+ "select_ndef_sw": "9000",
+ "read_s": 0.038,
+ "ndef_hex": "005cd101585402656e6372657141706d4670614459354e3245344e7a4177595745565958566a6332463059585032595732426542746f64485277637a6f764c33526c63335275645851755932467a6148557563334268593256685a50593d",
+ "ndef_len": 94,
+ "ndef_text": "creqApmFpaDY5N2E4NzAwYWEVYXVjc2F0YXP2YW2BeBtodHRwczovL3Rlc3RudXQuY2FzaHUuc3BhY2VhZPY=",
+ "creq": {
+  "i": "697a8700",
+  "a": 21,
+  "u": "sat",
+  "s": null,
+  "m": [
+   "https://testnut.cashu.space"
+  ],
+  "d": null
+ }
+}

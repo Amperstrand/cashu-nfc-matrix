@@ -14,14 +14,26 @@ CC_PINNED = "000f20003b00340406e10470ff0000"  # cashu.me == Numo, 2026-10-21
 ATR_PINNED_PREFIX = "3b 88 80 01 00 00 00 00 80 81 71 00 79"
 
 
-def _probe_with_retries(subst: str, tries: int = 4):
+def _probe_with_retries(subst: str, tries: int = 4, wedged_s: float = 45.0):
+    """Probe with interference tolerance.
+
+    - transient NoCard/unavailable (bc-taploop interleave): short backoff
+    - a TransmitTimeout watchdog KILL leaves pcscd's IFD busy on the reader
+      for tens of seconds; the next attempt must cool down long enough or
+      every later connect reports 'Reader is unavailable' (0x80100017).
+    """
     import time
+
+    from bench.probe_acr import TransmitTimeout
 
     last: Exception = RuntimeError("no probe attempt executed")
     for i in range(tries):
         try:
             return read_ndef_request(subst)
-        except Exception as e:  # bc-taploop interleave / transient reader state
+        except TransmitTimeout as e:
+            last = e
+            time.sleep(wedged_s)  # let pcscd's IFD clear
+        except Exception as e:
             last = e
             time.sleep(2 + i * 2)
     raise last
@@ -44,25 +56,32 @@ def test_cashu_me_request_over_acr(cashu_me, acr_place, evidence_dir, amount):
     assert creq["m"], "mint list empty"
 
 
+@pytest.mark.flaky(reruns=2, reruns_delay=45)
 def test_unarmed_e104_absent(cashu_me, acr_place):
-    """E104 must 6A82 with no armed request (receiver truthfulness)."""
-    from drivers import ui
+    """E104 must 6A82 with no armed request (receiver truthfulness).
 
-    ui.adb(cashu_me.serial, "shell", "am", "force-stop", "com.cashu.me")
+    Disarms by LEAVING the request screen (BACK), not by killing the app:
+    the HCE service stays bound and answers SELECT NDEF, so the probe can
+    never hang. Force-stop+early-probe = nobody answers the SELECT = the
+    watchdog kill wedges the ACR's IFD until a pcscd restart (bench fact).
+    """
     import time
 
-    time.sleep(1.5)
-    ui.adb(cashu_me.serial, "shell", "monkey", "-p", "com.cashu.me",
-           "-c", "android.intent.category.LAUNCHER", "1")
-    time.sleep(3)
-    cashu_me.go_home()  # armed request screen is NOT open
-    res = read_ndef_request("ACR1252")
+    from drivers import ui
+
+    st = cashu_me.create_request(12)
+    assert "Ask the sender" in st, f"not armed: {st!r}"
+    ui.adb(cashu_me.serial, "shell", "input", "keyevent", "KEYCODE_BACK")
+    time.sleep(2.0)
+    assert not cashu_me.is_armed(), "still advertising after leaving request screen"
+    res = _probe_with_retries("ACR1252", tries=3)
     assert res.get("select_aid_sw") == "9000"
     assert res.get("select_ndef_sw") == "6a82", (
         f"E104 answered without armed request: {res.get('select_ndef_sw')}"
     )
 
 
+@pytest.mark.flaky(reruns=2, reruns_delay=45)
 @pytest.mark.skipif(
     __import__("subprocess").run(
         ["adb", "-s", __import__("drivers.ui", fromlist=["ui"]).DEFAULT_SERIAL,

@@ -26,7 +26,7 @@ def adb(serial: str, *args: str, timeout: float = 30) -> str:
         proc = subprocess.Popen(
             ["adb", "-s", serial, *args],
             stdout=out,
-            stderr=subprocess.DEVNULL,
+            stderr=subprocess.STDOUT,  # diagnosable failures (monkey et al.)
             stdin=subprocess.DEVNULL,
             start_new_session=True,
         )
@@ -38,10 +38,25 @@ def adb(serial: str, *args: str, timeout: float = 30) -> str:
             except ProcessLookupError:
                 pass
             raise TimeoutError(f"adb {args[:3]} timed out after {timeout}s")
-        if proc.returncode != 0:
-            raise RuntimeError(f"adb {args} failed: rc={proc.returncode}")
         out.seek(0)
-        return out.read()
+        text = out.read()
+        if proc.returncode != 0:
+            raise RuntimeError(
+                f"adb {args} failed: rc={proc.returncode}: {text.strip()[:300]}"
+            )
+        return text
+
+
+def launch_app(serial: str, package: str, timeout: float = 30) -> str:
+    """Resolve the launcher activity then start it (monkey is flaky; a bare
+    component would break across activities being renamed)."""
+    out = adb(serial, "shell", "cmd", "package", "resolve-activity", "--brief",
+              "-c", "android.intent.category.LAUNCHER", package, timeout=timeout)
+    lines = [ln.strip() for ln in out.splitlines() if ln.strip()]
+    comp = lines[-1] if lines else ""
+    if "/" not in comp:
+        raise RuntimeError(f"cannot resolve launcher for {package}: {out.strip()[:200]}")
+    return adb(serial, "shell", "am", "start", "-n", comp, timeout=timeout)
 
 
 def dump(serial: str = DEFAULT_SERIAL) -> ET.Element:

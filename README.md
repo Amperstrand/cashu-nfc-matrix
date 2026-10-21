@@ -26,7 +26,34 @@ critical path: phone↔nucula flows never write the ACR's emulated memory.
 NFC-capable but not Android-reachable per Numo's compatibility list: Sovran (iOS),
 Macadamia (iOS). Phoenix listed as tap-to-pay compatible (ecash support unverified).
 
-## Layout (planned)
+## Running the suites
+
+```
+# local (ALWAYS under tmux — a killed foreground pytest leaks its labgrid
+# places; twice bitten):
+tmux new -d -s matrix-hil 'cd cashu-nfc-matrix && /usr/bin/python3 -m pytest \
+  suites/ -v --hil --timeout=600 --timeout-method=signal \
+  -m "not soak and not payer" 2>&1 | tee run.log'
+
+# CI: workflow_dispatch on hil-nfc-matrix (stage smoke|full|soak) —
+# self-hosted bench runner (see below). Plain `pytest` touches no hardware.
+```
+
+What the results mean:
+- SKIPPED "bench busy" — another lane holds a place (labgrid is the arbiter);
+  not a failure.
+- SKIPPED "NO COUPLING" (T2b/T4) — the phone is not on the PN7160 antenna;
+  a bench-geometry fact, not a code defect.
+- Suite discipline: flock before labgrid (in conftest), ACR is read-only
+  (payer refuses it), boltcard HCE apps isolated per module and restored.
+
+Bench runner: `ai-legion-bench-matrix` (systemd
+`actions.runner.Amperstrand-cashu-nfc-matrix.*`, user ubuntu,
+`/opt/actions-runner-matrix`, labels `[self-hosted,Linux,X64,bench]`) —
+provisioned 2026-10-21. Workflow pushes need the SSH remote (the host's gh
+OAuth token lacks `workflow` scope).
+
+## Layout
 
 - `drivers/<wallet>/` — adb/uiautomator driver per wallet (install,
   onboard, send-by-NFC, receive-by-tap; FLAG_SECURE-safe UI driving)

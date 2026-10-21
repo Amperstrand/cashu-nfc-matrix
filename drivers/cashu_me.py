@@ -51,8 +51,7 @@ class CashuMeDriver:
             raise DriverError("device locked — HCE requires unlock; unlock manually")
 
     def launch(self) -> None:
-        ui.adb(self.serial, "shell", "monkey", "-p", self.package,
-               "-c", "android.intent.category.LAUNCHER", "1")
+        ui.launch_app(self.serial, self.package)
         time.sleep(3.0)
         # the app RESUMES its last screen (request detail, sheet, ...) —
         # normalize to the wallet home before doing anything else

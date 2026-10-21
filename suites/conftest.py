@@ -135,9 +135,29 @@ def phone_place(request):
 
 @pytest.fixture(scope="module")
 def acr_place(request):
-    """ref-acr1252 (READ-ONLY discipline)."""
+    """ref-acr1252 (READ-ONLY discipline). Heals a wedged ACR IFD with one
+    serialized pcscd restart (a watchdog-killed transmit wedges the reader
+    until pcscd restarts — bench-verified twice)."""
     _need_hil(request)
     held = acquire_places(["ref-acr1252"], why="ACR field read")
+
+    def acr_healthy() -> bool:
+        try:
+            from smartcard.System import readers
+
+            r = [x for x in readers() if "ACR1252" in str(x) and "PICC" in str(x)][0]
+            c = r.createConnection()
+            try:
+                c.connect()
+            finally:
+                c.disconnect()
+            return True
+        except Exception:
+            return False
+
+    if not acr_healthy():
+        sh(["systemctl", "restart", "pcscd"])
+        time.sleep(5)
     yield "ACS ACR1252"
     release_places(held)
 

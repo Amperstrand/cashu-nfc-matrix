@@ -14,12 +14,34 @@ DEFAULT_SERIAL = "RF8NB01ZYAH"
 
 
 def adb(serial: str, *args: str, timeout: float = 30) -> str:
-    out = subprocess.run(
-        ["adb", "-s", serial, *args], capture_output=True, text=True, timeout=timeout
-    )
-    if out.returncode != 0:
-        raise RuntimeError(f"adb {args} failed: rc={out.returncode} {out.stderr.strip()}")
-    return out.stdout
+    """Run adb; hang-proof: stdout goes to a file (no pipe drainage), and the
+    whole process group is killed on timeout (adb's device-side grandchildren
+    hold pipes open forever otherwise — observed as a 25-min wedge mid-soak)."""
+    import os
+    import signal
+    import subprocess
+    import tempfile
+
+    with tempfile.TemporaryFile("w+") as out:
+        proc = subprocess.Popen(
+            ["adb", "-s", serial, *args],
+            stdout=out,
+            stderr=subprocess.DEVNULL,
+            stdin=subprocess.DEVNULL,
+            start_new_session=True,
+        )
+        try:
+            proc.wait(timeout=timeout)
+        except subprocess.TimeoutExpired:
+            try:
+                os.killpg(proc.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+            raise TimeoutError(f"adb {args[:3]} timed out after {timeout}s")
+        if proc.returncode != 0:
+            raise RuntimeError(f"adb {args} failed: rc={proc.returncode}")
+        out.seek(0)
+        return out.read()
 
 
 def dump(serial: str = DEFAULT_SERIAL) -> ET.Element:

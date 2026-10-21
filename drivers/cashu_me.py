@@ -53,8 +53,10 @@ class CashuMeDriver:
     def launch(self) -> None:
         ui.adb(self.serial, "shell", "monkey", "-p", self.package,
                "-c", "android.intent.category.LAUNCHER", "1")
-        ui.wait_for(self.serial, contains="Receive", timeout=20)
-        time.sleep(1.0)
+        time.sleep(3.0)
+        # the app RESUMES its last screen (request detail, sheet, ...) —
+        # normalize to the wallet home before doing anything else
+        self.go_home()
 
     # ---------- navigation ----------
 
@@ -78,12 +80,51 @@ class CashuMeDriver:
         ui.tap_node(self.serial, n)
         ui.wait_for(self.serial, text="Paste a Cashu token", timeout=10)
 
+    def ensure_requestable(self) -> None:
+        """Recover the app's degraded Nostr runtime state.
+
+        Observed on the bench: after sustained relay-connection failures (the
+        bench AP blocks the default Nostr relays), the Receive sheet's Ecash
+        path fails with 'Nostr isn't ready — check your relays in Settings.'
+        Config is actually fine (relays + keys present); the runtime service
+        state is what degraded, and it re-initializes when the Nostr settings
+        screen resumes. This drives that round-trip once.
+        """
+        import time
+
+        from drivers import ui
+
+        ui.adb(self.serial, "shell", "input", "keyevent", "KEYCODE_BACK")
+        time.sleep(1.0)
+        self.go_home()
+        ui.adb(self.serial, "shell", "input", "tap", "120", "184")  # top-left settings
+        ui.wait_for(self.serial, text="Nostr", timeout=12)
+        ui.tap_text(self.serial, "Nostr", timeout=8)
+        ui.wait_for(self.serial, contains="RELAYS", timeout=12)
+        ui.adb(self.serial, "shell", "input", "keyevent", "KEYCODE_BACK")
+        time.sleep(0.8)
+        ui.adb(self.serial, "shell", "input", "keyevent", "KEYCODE_BACK")
+        time.sleep(0.8)
+
     def create_request(self, amount: int | None) -> str:
         """Receive sheet -> new NUT-18 request. Set amount via picker if given.
 
         Returns the NFC status line shown once armed/needs-amount.
+        Self-heals one 'Nostr isn't ready' degradation via ensure_requestable().
         """
+        try:
+            return self._create_request_once(amount)
+        except (TimeoutError, DriverError):
+            self.ensure_requestable()
+            return self._create_request_once(amount)
+
+    def _create_request_once(self, amount: int | None) -> str:
         self.open_receive_sheet()
+        # fast-fail detection: the degraded sheet shows the Nostr banner and
+        # the request screen never opens
+        sheet = ui.screen_text(self.serial)
+        if "Nostr isn't ready" in sheet:
+            raise DriverError("nostr degraded (sheet banner)")
         self.tap_button_above("Ecash")
         ui.wait_for(self.serial, text="Mint", timeout=15)
         if amount is not None:
@@ -112,15 +153,13 @@ class CashuMeDriver:
     # ---------- wallet ----------
 
     def go_home(self) -> None:
-        for _ in range(4):
+        for _ in range(6):
             txt = ui.screen_text(self.serial)
             if "View all activity" in txt or ("Testnut mint" in txt and "Receive" in txt):
                 return
-            if "Paste a Cashu token" in txt or "Cashu Request" in txt:
-                ui.adb(self.serial, "shell", "input", "keyevent", "KEYCODE_BACK")
-                time.sleep(1.2)
-                continue
-            break
+            # anything else (sheet, request detail, settings, chooser): back out
+            ui.adb(self.serial, "shell", "input", "keyevent", "KEYCODE_BACK")
+            time.sleep(1.2)
         raise DriverError(f"cannot find wallet home; focus={self.focus()}")
 
     def balance_sats(self) -> int:

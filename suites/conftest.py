@@ -135,11 +135,19 @@ def phone_place(request):
 
 @pytest.fixture(scope="module")
 def acr_place(request):
-    """ref-acr1252 (READ-ONLY discipline). Heals a wedged ACR IFD with one
-    serialized pcscd restart (a watchdog-killed transmit wedges the reader
-    until pcscd restarts — bench-verified twice)."""
+    """ref-acr1252 in reader mode. FIELD-ARBITRATED: for this module the ACR
+    owns the RF field (nucula broker stopped — its PN7160 parks, idle+deaf).
+    Heals a wedged ACR IFD with one pcscd restart."""
     _need_hil(request)
     held = acquire_places(["ref-acr1252"], why="ACR field read")
+    from bench.field_arbiter import grant
+
+    grant("acr")
+    # buzzer default OFF for automation (best-effort; see acr_peripherals.py)
+    sh(["/usr/bin/python3", "-c",
+        "import sys; sys.path.insert(0, '.'); "
+        "from bench import acr_peripherals as ap; ap.set_buzzer(False)"],
+       timeout=30)
 
     def acr_healthy() -> bool:
         try:
@@ -159,6 +167,9 @@ def acr_place(request):
         sh(["systemctl", "restart", "pcscd"])
         time.sleep(5)
     yield "ACS ACR1252"
+    from bench.field_arbiter import grant as _g
+
+    _g("quiet")
     release_places(held)
 
 

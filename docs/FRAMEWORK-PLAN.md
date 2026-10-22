@@ -99,3 +99,34 @@ Status: payer.py ACR reader-mode enabled (owner directive, dated above);
 CE/PICC escape code must stay out of this repo. First ACR-driven payment
 test armed — needs the phone (or a nucula running wallet fw) in the ACR's
 field.
+
+## Static-bench field arbitration (2026-10-22, owner arrangement: nucula
+## wedged between ACR and phone — all three in one field, permanently)
+
+`bench/field_arbiter.py` — exactly one reader owns the RF field per phase:
+
+- `grant("acr")`    : ACR USB bound, nucula broker STOPPED (PN7160 parks —
+                      idle AND deaf; no host polls = no field)
+- `grant("nucula")` : ACR USB unbound (no field at all), broker (re)started
+                      — the restart DTR-resets the c3, which also heals the
+                      'parked/deaf after pcscd churn' state seen twice today
+- `grant("quiet")`  : both muted (default between phases)
+- Transitions restart pcscd (~10-15 s); suite fixtures (acr_place,
+  nucula_reader_place) grant their own field and return to quiet on teardown.
+
+Empirics encoded: with the ACR bound and polling, the phone couples to the
+ACR 18/18 and the nucula 0/18 at this geometry; ACR-unbound reverses it.
+First static-bench proof: computer-wallet payment via ACR (2734-byte token,
+53 chunks, 0.8 s write — 27x faster than the nucula reader's 21.6 s),
+phone redeemed 21 sat (net 20 after input fee).
+
+## ACR buzzer (owner directive: default OFF, demo beep optional)
+
+`bench/acr_peripherals.py` (status | buzzer on|off) via CCID escape
+(GET_FEATURE_REQUEST -> FEATURE_CCID_ESC; ACR1252U PICC params 43/46,
+buzzer = PP bit 1). Status on this bench: the driver does NOT expose
+FEATURE_CCID_ESC and the legacy ctl(0x42000001) path rejects the GET
+(SW 6300) — so the tool is best-effort wired into acr_place, and the
+durable options are (a) ACS PUTools from a Windows host once (persistent
+reader setting), or (b) accept beeps. The LED already follows RF activity
+natively (single-color; no RGB control on the ACR1252U).

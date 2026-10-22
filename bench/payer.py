@@ -119,10 +119,16 @@ class Type4Payer:
         return req
 
     def write_token(self, token: str | bytes) -> dict:
-        """Write the payment: SELECT E104 (write target) then D6 chunks."""
+        """Write the payment: SELECT E104 (write target) then D6 chunks.
+        Always opens with a 2-byte zero write at offset 0 — the receiver's
+        reset-transfer marker (NfcType4Tag.updateBinary) — so a RETRY after
+        a collision-torn session starts from a clean incoming buffer."""
         d, s1, s2 = self._tx([0x00, 0xA4, 0x00, 0x0C, 0x02, 0xE1, 0x04])
         if (s1, s2) != (0x90, 0x00):
             raise PayerError(f"E104 select for write SW={s1:02x}{s2:02x}")
+        d, s1, s2 = self._tx([0x00, 0xD6, 0x00, 0x00, 0x02, 0x00, 0x00])
+        if (s1, s2) != (0x90, 0x00):
+            raise PayerError(f"reset write SW={s1:02x}{s2:02x}")
         file = text_type4_file(token) if isinstance(token, str) else binary_type4_file(token)
         nlen = len(file) - 2
         if nlen > 0x70FF:

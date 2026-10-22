@@ -32,13 +32,21 @@ def get_acr(subst: str = "ACR1252"):
     by GC between readers() and connect() otherwise ('Context already
     released' — observed as flaky mid-suite failures)."""
     global _READER_CACHE
-    cands = [name for name in _READER_CACHE if subst in name]
-    if not cands:
-        _READER_CACHE = {str(r): r for r in readers()}
+    import time as _t
+    # bounded retry: pcscd enumeration after a bind+restart is not instant
+    # (ccid hotplug lags the config-file twin readers by seconds)
+    deadline = _t.monotonic() + 20
+    while True:
         cands = [name for name in _READER_CACHE if subst in name]
-    if not cands:
-        raise RuntimeError(f"reader matching {subst!r} not present in pcscd")
-    return _READER_CACHE[cands[0]]
+        if not cands:
+            _READER_CACHE = {str(r): r for r in readers()}
+            cands = [name for name in _READER_CACHE if subst in name]
+        if cands:
+            return _READER_CACHE[cands[0]]
+        if _t.monotonic() > deadline:
+            raise RuntimeError(f"reader matching {subst!r} not present in pcscd "
+                               f"after 20s: {sorted(_READER_CACHE)}")
+        _t.sleep(1.5)
 
 
 def read_ndef_request(subst: str = "ACR1252") -> dict:

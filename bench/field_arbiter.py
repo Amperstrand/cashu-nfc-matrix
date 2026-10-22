@@ -33,7 +33,15 @@ def sh(cmd: list[str]) -> subprocess.CompletedProcess:
 
 def _acr_bind(on: bool) -> None:
     action = "bind" if on else "unbind"
-    sh(["bash", "-c", f"echo {ACR_USB} > /sys/bus/usb/drivers/usb/{action}"])
+    import usb.core as _u
+    devs = list(_u.find(find_all=True, idVendor=0x072F, idProduct=0x1252)) or \
+        list(_u.find(find_all=True, idVendor=0x072F))
+    for d in devs:
+        # resolve the CURRENT bus/port path — the ACR was replugged by the
+        # owner (bus/port changed); a hardcoded ACR_USB goes stale forever
+        pn = getattr(d, "port_numbers", None)
+        path = f"{d.bus}-" + ".".join(str(p) for p in pn) if pn else f"{d.bus}-{d.address}"
+        sh(["bash", "-c", f"echo {path} > /sys/bus/usb/drivers/usb/{action}"])
 
 
 def _broker(on: bool) -> None:
@@ -117,13 +125,21 @@ def _grant_locked(owner: str) -> None:
     else:
         raise ValueError(f"unknown owner {owner!r}")
     import os as _o
-    _fd = _o.open(STATE_FILE, _o.O_RDWR | _o.O_CREAT | _o.O_TRUNC, 0o666)
-    try:
-        _o.fchmod(_fd, 0o666)
-    except PermissionError:
-        pass
-    with _o.fdopen(_fd, "w") as f:
-        f.write(owner)
+    import getpass as _gp
+    # shared file first; a foreign-owner 0644 leftover (root<->runner) falls
+    # back to a per-user file — the state is display-only, never gate on it
+    for _p in (STATE_FILE, f"{STATE_FILE}-{_gp.getuser()}"):
+        try:
+            _fd = _o.open(_p, _o.O_RDWR | _o.O_CREAT | _o.O_TRUNC, 0o666)
+            try:
+                _o.fchmod(_fd, 0o666)
+            except PermissionError:
+                pass
+            with _o.fdopen(_fd, "w") as f:
+                f.write(owner)
+            break
+        except PermissionError:
+            continue
     print(f"[field] granted -> {owner} ({status()})")
 
 

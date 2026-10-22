@@ -14,7 +14,7 @@ MINT="${MINT_URL:-https://testnut.cashu.space}"
 OUT="${1:?usage: mint_token.sh <outfile> [sats]}"
 [ "${2:-}" ] && SATS="$2"
 
-RIG_DIR="${RIG_DIR:-/tmp/opencode/phone-hil/nucula/rig}"
+RIG_DIR="${RIG_DIR:-/opt/bench/nucula-rig/rig}"
 TARGET_DIR="${RIG_TARGET_DIR:-/tmp/opencode/phone-hil/nucula/rig/target-hil}"
 
 cd "$RIG_DIR"

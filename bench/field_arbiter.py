@@ -81,7 +81,10 @@ def grant(owner: str) -> None:
     import os as _os
 
     lk = _os.open("/tmp/nfc-field-arbiter.lock", _os.O_RDWR | _os.O_CREAT, 0o666)
-    _os.fchmod(lk, 0o666)
+    try:
+        _os.fchmod(lk, 0o666)
+    except PermissionError:
+        pass
     try:
         _f.flock(lk, _f.LOCK_EX | _f.LOCK_NB)
     except BlockingIOError:

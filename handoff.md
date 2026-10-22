@@ -103,3 +103,18 @@
   'M5stick GemPC init failed' every restart since 22:19. Not ours to kill.
 - ACR cell: grant+reader verified working as ubuntu locally; CI failure
   at 20:19 was pre-sudo-fix run; expect green on next dispatch.
+
+## 2026-10-23 — BENCH-LOCAL MINT LIVE (determinism unlock done)
+
+- systemd `micronuts-demo-mint` (enabled, 0.0.0.0:3338): micronuts-audit-adapter
+  bridging the stdio mint_server over Cashu REST. Zero input fees, in-memory.
+- VALIDATED end-to-end from host: rig mint (21 sat, 2715-char cashuB, m=127.0.0.1:3338)
+  -> cdk wallet receive -> RECEIVED=21 in 0.21s total. No testnut in the loop.
+- Gotchas hit + resolved: (1) adapter binary lives at /root/.cargo-target/debug/
+  (cargo config target-dir — NOT ./target); mint_server at /root/src/micronuts/target.
+  (2) `cargo build -p A --bin X -p B` silently builds nothing for B — build
+  packages separately. (3) mint_token.sh reads MINT_URL not MINT — a token with
+  m=testnut against the local mint yields UnknownShortKeysetId (client-side,
+  red herring; the adapter's keyset id IS correct CDK-v1 form).
+- Next: switch T5/soak default to MINT_URL=http://<lan-ip>:3338 + phone add_mint
+  (add_mint flow already in driver); then CI payments stop depending on testnut.

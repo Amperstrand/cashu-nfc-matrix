@@ -10,6 +10,7 @@
 set -euo pipefail
 
 SATS="${HIL_MINT_SATS:-21}"
+RUN_LOG="${TMPDIR:-/tmp}/mint-token-$$.log"
 MINT="${MINT_URL:-https://testnut.cashu.space}"
 OUT="${1:?usage: mint_token.sh <outfile> [sats]}"
 [ "${2:-}" ] && SATS="$2"
@@ -22,8 +23,8 @@ env PATH=/root/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbi
     VIRTUAL_ENV= MINT_URL="$MINT" HIL_MINT_SATS="$SATS" \
     CARGO_TARGET_DIR="$TARGET_DIR" \
     cargo test --features payer mints_a_token_from_the_running_mint -- --ignored --nocapture \
-    > /tmp/mint-token-run.log 2>&1 || { tail -5 /tmp/mint-token-run.log; exit 1; }
+    > "$RUN_LOG" 2>&1 || { tail -5 "$RUN_LOG"; exit 1; }
 
-grep -o 'TOKEN=[^ ]*' /tmp/mint-token-run.log | sed 's/^TOKEN=//' | head -1 > "$OUT"
+grep -o "TOKEN=[^ ]*" "$RUN_LOG" | sed 's/^TOKEN=//' | head -1 > "$OUT"
 [ -s "$OUT" ] || { echo "no token in output" >&2; exit 1; }
 echo "minted $(wc -c < "$OUT") char token for ${SATS} sats -> $OUT"

@@ -34,8 +34,13 @@ def _watchdog():
 
 class Type4Payer:
     def __init__(self, subst: str = "Nucula CCID"):
-        if "ACR" in subst and subst == "ACR1252":
-            raise PayerError("refusing ACR1252: bench rule READ-ONLY (CCID CE-write wedge)")
+        # ACR policy (owner directive 2026-10-22): the ACR1252 MAY be used in
+        # READER (PCD) mode — including UPDATE BINARY writes to EXTERNAL tags
+        # (phone/nucula HCE) — as the computer wallet's NFC interface.
+        # What remains FORBIDDEN is the ACR's own PICC/CE-emulation memory
+        # writes (the CCID wedge; replug-only recovery per nucula AGENTS.md).
+        # This class only ever drives reader mode, so no guard is needed here;
+        # keep any future CE escape-command code OUT of this repo.
         self.r = get_acr(subst)
         self.conn = None
 

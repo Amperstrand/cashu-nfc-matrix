@@ -81,6 +81,10 @@ def grant(owner: str) -> None:
         _broker(True)   # restart = board reset = fresh, unparked poll loop
         time.sleep(6)   # board settle before pcscd handshake
         _pcscd_restart()
+    elif owner == "m5stick":
+        _acr_bind(False)
+        _broker(False)
+        _pcscd_restart()
     elif owner == "quiet":
         _acr_bind(False)
         _broker(False)

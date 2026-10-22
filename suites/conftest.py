@@ -59,7 +59,11 @@ class BenchLock:
         self.fd = None
 
     def __enter__(self):
-        self.fd = open(BENCH_LOCK, "w")
+        # 0o666: the CI runner (ubuntu) must also flock the shared file
+        import os as _os
+        fd = _os.open(BENCH_LOCK, _os.O_RDWR | _os.O_CREAT, 0o666)
+        _os.fchmod(fd, 0o666)
+        self.fd = os.fdopen(fd, "w")
         fcntl.flock(self.fd, fcntl.LOCK_EX)
         return self
 

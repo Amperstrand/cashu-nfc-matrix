@@ -1,0 +1,4 @@
+# live device-matrix grid (readers)
+- acr1252: present | present, no coupling (NoCardException)
+- nucula-pn7160: present | present, no coupling (NoCardException)
+- m5stick-mfrc522: ABSENT | -

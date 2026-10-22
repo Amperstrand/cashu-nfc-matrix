@@ -27,8 +27,15 @@ BENCH_LOCK = "/tmp/amperstrand-bench.lock"
 STATE_FILE = "/tmp/nfc-field-owner"
 
 
-def sh(cmd: list[str]) -> subprocess.CompletedProcess:
-    return subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+def sh(cmd: list[str], input_s: str | None = None) -> subprocess.CompletedProcess:
+    return subprocess.run(cmd, capture_output=True, text=True, timeout=60,
+                          input=input_s)
+
+
+def _sudo(cmd: list[str]) -> list[str]:
+    """Elevate privileged ops when not root (CI runner = ubuntu, NOPASSWD)."""
+    import os as _o
+    return ["sudo", "-n"] + cmd if _o.geteuid() != 0 else cmd
 
 
 def _acr_bind(on: bool) -> None:
@@ -41,15 +48,15 @@ def _acr_bind(on: bool) -> None:
         # owner (bus/port changed); a hardcoded ACR_USB goes stale forever
         pn = getattr(d, "port_numbers", None)
         path = f"{d.bus}-" + ".".join(str(p) for p in pn) if pn else f"{d.bus}-{d.address}"
-        sh(["bash", "-c", f"echo {path} > /sys/bus/usb/drivers/usb/{action}"])
+        sh(_sudo(["tee", f"/sys/bus/usb/drivers/usb/{action}"]), input_s=path + "\n")
 
 
 def _broker(on: bool) -> None:
-    sh(["systemctl", "start" if on else "stop", "nucula-ccid-broker"])
+    sh(_sudo(["systemctl", "start" if on else "stop", "nucula-ccid-broker"]))
 
 
 def _pcscd_restart() -> None:
-    sh(["systemctl", "restart", "pcscd"])
+    sh(_sudo(["systemctl", "restart", "pcscd"]))
     time.sleep(4)
 
 

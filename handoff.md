@@ -79,3 +79,27 @@
 - CI-payment item still waits on mint executing as the ubuntu runner
   (root-created files unreadable by ubuntu on this host even at 0666/777 —
   LSM-class; workaround: run mint step as root or prebuild the test binary).
+
+## 2026-10-22 late window — CI PAYMENT GREEN (after 8 dispatches)
+
+- **T5[Nucula CCID] PASSED ON CI (run 39845791451)**: first fully
+  CI-driven NFC payment (runner mints, arms, writes over NFC, phone
+  redeems, balance asserted). Evidence in the run's artifacts.
+- Dispatch-chain root causes fixed along the way (each one a commit):
+  stale root-owned /tmp/mint logs vs runner user -> per-PID temp files;
+  runner HOME unset -> old /usr/bin/cargo 1.75 vs lockfile v4 -> absolute
+  cargo resolution to /home/ubuntu/.cargo/bin; unquoted colon in step
+  name broke workflow_dispatch (yaml parse); killed-run labgrid leaks ->
+  pre-step releases stale holds; arbiter ops as ubuntu were polkit/EACCES
+  no-ops -> sudo -n elevation (ubuntu has NOPASSWD); ACR bind hardcode
+  '1-4' stale on replug -> live sysfs path via pyusb; owner-state /tmp
+  file root<->runner collisions -> per-user fallback.
+- cdk rig: /home/ubuntu/src/cdk is a SYMLINK into /root (700) — the whole
+  'LSM' theory was that; dereferenced ubuntu-owned copy at /opt/bench/cdk;
+  rig at /opt/bench/nucula-rig builds as ubuntu (cargo 1.99).
+- M5stick cell BLOCKED (hardware, foreign): /dev/ttyUSB3 held by root
+  python3 (PID 2059177, another lane) and the stick answers its CONSOLE
+  protocol ('unknown: ... nfc') — not in GemPC reader mode; pcscd
+  'M5stick GemPC init failed' every restart since 22:19. Not ours to kill.
+- ACR cell: grant+reader verified working as ubuntu locally; CI failure
+  at 20:19 was pre-sudo-fix run; expect green on next dispatch.

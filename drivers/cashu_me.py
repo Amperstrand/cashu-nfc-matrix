@@ -12,6 +12,7 @@ UI geometry notes (v0.2.0, S20 FE 1080x2400 dumps):
 from __future__ import annotations
 
 import re
+from pathlib import Path
 import time
 
 from drivers import ui
@@ -258,6 +259,55 @@ class CashuMeDriver:
         time.sleep(2.5)
         ui.tap_text(self.serial, "Continue", timeout=10)
         time.sleep(4)
+
+    # ---------- WalletOps conformance ----------
+    id = "cashu_me"
+
+    def ensure_ready(self) -> None:
+        """Idempotent any-state -> usable wallet (onboarding, mint, Nostr
+        heal). WalletOps interface (drivers/base.py)."""
+        self.ensure_onboarded(prefer_mint="https://testnut.cashu.space")
+        txt = ui.screen_text(self.serial)
+        if "Testnut" not in txt:
+            self.add_mint("https://testnut.cashu.space")
+
+    def request_payment(self, amount_sats: int) -> str:
+        return self.create_request(amount_sats)
+
+    def await_payment(self, timeout_s: float = 60) -> int:
+        """Watch the request screen WITHOUT navigation; returns credited
+        sats (amount minus 1-sat input fee at current testnut keysets)."""
+        bal0 = None
+        deadline = time.monotonic() + timeout_s
+        while time.monotonic() < deadline:
+            txt = ui.screen_text(self.serial)
+            if "Payment received" in txt:
+                break
+            if "failed" in txt.lower():
+                raise DriverError(f"wallet rejected payment: {txt[:200]}")
+            time.sleep(3)
+        else:
+            raise DriverError("no success screen before timeout")
+        time.sleep(2)
+        for _ in range(8):
+            try:
+                return self.balance_sats()
+            except DriverError:
+                time.sleep(2)
+        raise DriverError("balance unreadable after success")
+
+    def send_payment_token(self, amount_sats: int) -> str:
+        """Mint a fresh spendable token via the rig (bench/mint_token.sh)."""
+        import subprocess
+
+        out = f"/tmp/walletops-token-{amount_sats}.txt"
+        r = subprocess.run(
+            ["bash", "bench/mint_token.sh", out, str(amount_sats)],
+            capture_output=True, text=True, timeout=300, cwd=str(Path(__file__).resolve().parent.parent),
+        )
+        if r.returncode != 0:
+            raise DriverError(f"mint failed: {r.stdout[-150:]}")
+        return open(out).read().strip()
 
     # ---------- wallet lifecycle ----------
 

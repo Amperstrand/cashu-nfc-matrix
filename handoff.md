@@ -60,3 +60,22 @@
 - No external posts; wallet upstreams untouched; secrets never committed.
 - End-of-session: restore boltcard apps if disabled, broker+pcscd healthy,
   places released (already), this file updated.
+
+## 2026-10-22 evening window — perf root-cause (ccid-firmware-rs#408)
+
+- LIVE MEASURED: nucula write leg = 400.0 ms/chunk CONSTANT (53/53 within
+  1.2 ms band; 21.2 s total) vs ACR1252 ~15 ms/chunk (0.8 s). Timer, not RF.
+- ROOT CAUSE: pn7160-nci exchange = poll-round based (12x200 ms) + credit
+  gating -> small APDU burns 2 full rounds = 400 ms regardless of the
+  phone answering in ~5 ms. Source: crates/pn7160-nci/src/lib.rs exchange.
+- FILED: ccid-firmware-rs#408 (cross-refs #119/#137/#120/#261), fix =
+  harvest-before-sleep (0-ms poll after TX/credit) with rounds as fallback;
+  verification via 0xD2 turnaround probe + T5 write timing.
+- TOOL: bench/write_latency_probe.py (any reader, per-chunk us timing),
+  commit c5feead. Comments posted on #408 and nucula#33.
+- Journal-timestamp caveat: journalctl short-iso has NO sub-second —
+  wire-log delta analysis only bounds latency to whole seconds; host-side
+  perf_counter is the precise instrument.
+- CI-payment item still waits on mint executing as the ubuntu runner
+  (root-created files unreadable by ubuntu on this host even at 0666/777 —
+  LSM-class; workaround: run mint step as root or prebuild the test binary).

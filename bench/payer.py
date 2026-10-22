@@ -41,12 +41,31 @@ class Type4Payer:
 
     # -- connection --
 
-    def connect(self) -> str:
-        c = self.r.createConnection()
-        c.connect()
-        self.conn = c
-        self.proto = c.getProtocol()
-        return " ".join(f"{b:02x}" for b in c.getATR())
+    def connect(self, tries: int = 3) -> str:
+        """Connect, tolerating the first-activation warm-up: the PN7160 path
+        on fresh c3-ccid firmware can fail the FIRST exchange after idle
+        (SW=6400); a brand-new connection then works. Bench-verified."""
+        from smartcard.Exceptions import CardConnectionException, NoCardException
+
+        last: Exception = RuntimeError("no connect attempt")
+        for i in range(tries):
+            try:
+                c = self.r.createConnection()
+                c.connect()
+                # probe exchange: SELECT NDEF must answer 9000
+                d, s1, s2 = c.transmit(
+                    [0x00, 0xA4, 0x04, 0x00, 0x07, 0xD2, 0x76, 0x00, 0x00, 0x85, 0x01, 0x01, 0x00],
+                    c.getProtocol(),
+                )
+                if (s1, s2) == (0x90, 0x00):
+                    self.conn = c
+                    self.proto = c.getProtocol()
+                    return " ".join(f"{b:02x}" for b in c.getATR())
+                last = PayerError(f"warm-up SW={s1:02x}{s2:02x}")
+            except (NoCardException, CardConnectionException) as e:
+                last = e
+            time.sleep(1.5)
+        raise last
 
     def _tx(self, apdu, timeout_s=15):
         old = signal.signal(signal.SIGALRM, _watchdog())

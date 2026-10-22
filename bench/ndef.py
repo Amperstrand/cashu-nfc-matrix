@@ -42,7 +42,13 @@ def parse_text_record(file: bytes) -> str:
 
 def text_type4_file(text: str, lang: str = "en") -> bytes:
     payload = bytes([len(lang) & 0x3F]) + lang.encode() + text.encode()
-    header = bytes([MB | ME | SR | 0x01, 0x01, len(payload)]) + b"T" + payload
+    if len(payload) <= 0xFF:  # short record
+        header = bytes([MB | ME | SR | 0x01, 0x01, len(payload)]) + b"T" + payload
+    else:  # long record (4-byte payload length) — e.g. 374-char cashuB tokens
+        header = (
+            bytes([MB | ME | 0x01, 0x01]) + len(payload).to_bytes(4, "big")
+            + b"T" + payload
+        )
     return len(header).to_bytes(2, "big") + header
 
 

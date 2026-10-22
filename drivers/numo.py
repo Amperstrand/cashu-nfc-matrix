@@ -18,9 +18,15 @@ class NumoDriver:
 
     def launch(self) -> None:
         ui.launch_app(self.serial, self.package)
+        time.sleep(3)
+        # resume-state normalization: the app can come back on its Pay screen
+        # (armed HCE) — back out to the keypad before anything else
+        root = ui.dump(self.serial)
+        if ui.find(root, contains="Waiting for payment"):
+            ui.adb(self.serial, "shell", "input", "keyevent", "KEYCODE_BACK")
+            time.sleep(1.2)
         # onboarding guard: if the wallet-setup flow shows, run through it
         # (fresh-install only; leaves default mint, zero funds)
-        time.sleep(4)
         self._finish_onboarding_if_present()
         ui.wait_for(self.serial, contains="Charge", timeout=25)
 

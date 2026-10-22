@@ -116,7 +116,13 @@ def _grant_locked(owner: str) -> None:
         _pcscd_restart()
     else:
         raise ValueError(f"unknown owner {owner!r}")
-    with open(STATE_FILE, "w") as f:
+    import os as _o
+    _fd = _o.open(STATE_FILE, _o.O_RDWR | _o.O_CREAT | _o.O_TRUNC, 0o666)
+    try:
+        _o.fchmod(_fd, 0o666)
+    except PermissionError:
+        pass
+    with _o.fdopen(_fd, "w") as f:
         f.write(owner)
     print(f"[field] granted -> {owner} ({status()})")
 

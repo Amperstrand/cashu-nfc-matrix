@@ -19,7 +19,10 @@ RIG_DIR="${RIG_DIR:-/opt/bench/nucula-rig/rig}"
 TARGET_DIR="${RIG_TARGET_DIR:-/opt/bench/nucula-rig/rig/target}"
 
 cd "$RIG_DIR"
-env PATH=/root/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
+CARGO="${CARGO_BIN:-}"
+[ -x "$CARGO" ] || CARGO=/home/ubuntu/.cargo/bin/cargo
+[ -x "$CARGO" ] || CARGO="$(command -v cargo)"
+env PATH="$(dirname "$CARGO"):$PATH" \
     VIRTUAL_ENV= MINT_URL="$MINT" HIL_MINT_SATS="$SATS" \
     CARGO_TARGET_DIR="$TARGET_DIR" \
     cargo test --features payer mints_a_token_from_the_running_mint -- --ignored --nocapture \

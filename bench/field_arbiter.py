@@ -71,7 +71,29 @@ def _exists(p: str) -> bool:
 
 
 def grant(owner: str) -> None:
-    """owner: 'acr' | 'nucula' | 'quiet'."""
+    """owner: 'acr' | 'nucula' | 'm5stick' | 'quiet'.
+
+    SINGLE-WRITER: the arbiter is host-global (USB binds, pcscd) — a CI run
+    and a local run racing it corrupt each other's reader state (observed:
+    first CI dispatch raced a local T5; labgrid place locks do not cover
+    host-global effects). Exclusive lock, fail loudly on contention."""
+    import fcntl as _f
+    import os as _os
+
+    lk = _os.open("/tmp/nfc-field-arbiter.lock", _os.O_RDWR | _os.O_CREAT, 0o666)
+    _os.fchmod(lk, 0o666)
+    try:
+        _f.flock(lk, _f.LOCK_EX | _f.LOCK_NB)
+    except BlockingIOError:
+        raise SystemExit("field arbiter busy: another matrix driver owns the "
+                         "host (CI run or local suite) — do not race it")
+    try:
+        _grant_locked(owner)
+    finally:
+        _os.close(lk)
+
+
+def _grant_locked(owner: str) -> None:
     if owner == "acr":
         _acr_bind(True)
         _broker(False)

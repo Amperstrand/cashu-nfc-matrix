@@ -112,6 +112,22 @@ def evidence_dir(request) -> Path:
     return d
 
 
+@pytest.fixture(scope="session")
+def rec(request, evidence_dir):
+    """RunRecorder: film-style footage for the whole session (timeline +
+    broker wire + logcat + stills + film.md). See bench/run_recorder.py."""
+    from bench.run_recorder import RunRecorder
+
+    r = RunRecorder(evidence_dir)
+    r.start_default_followers()
+    yield r
+    failed = hasattr(request.session, "testsfailed") and request.session.testsfailed
+    r.finish(summary=f"{'FAILURES PRESENT' if failed else 'all green'}; "
+                     f"footage in {evidence_dir}")
+    # keep a terminal still per policy (cheap, always) for the last state
+    r.still("run-terminal")
+
+
 # ---------------------------------------------------------------- places
 
 

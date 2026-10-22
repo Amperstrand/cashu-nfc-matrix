@@ -11,3 +11,5 @@
 {"cycle": 10, "ts": "13:03:09", "mint_s": 1.7, "nfc_s": 29.8, "chunks": 53, "credited": 20, "ok": true, "cycle_s": 88.1}
 {"cycle": 11, "ts": "13:04:37", "mint_s": 1.9, "nfc_s": 29.8, "chunks": 53, "credited": 20, "ok": true, "cycle_s": 88.3}
 {"cycle": 12, "ts": "13:06:05", "mint_s": 1.8, "nfc_s": 30.0, "chunks": 53, "credited": 20, "ok": true, "cycle_s": 88.6}
+{"cycle": 13, "ts": "13:07:34", "mint_s": 2.9, "ok": false, "error": "CardConnectionException('Failed to transmit with protocol T1. RPC transport error.')", "recovered": true, "cycle_s": 148.0}
+{"cycle": 14, "ts": "13:10:02", "mint_s": 6.5, "nfc_s": 29.8, "chunks": 53, "credited": 20, "ok": true, "cycle_s": 93.0}

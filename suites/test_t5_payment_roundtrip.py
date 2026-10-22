@@ -53,7 +53,7 @@ def bench_places(request):
 
 
 @pytest.mark.parametrize("reader", ["Nucula CCID", "ACR1252"])
-def test_nfc_payment_round_trip(bench_places, reader, request, evidence_dir, tmp_path):
+def test_nfc_payment_round_trip(bench_places, reader, request, evidence_dir, rec, tmp_path):
     from drivers import ui
     from drivers.cashu_me import CashuMeDriver
 
@@ -77,12 +77,16 @@ def test_nfc_payment_round_trip(bench_places, reader, request, evidence_dir, tmp
     bal0 = cashu_me.balance_sats()
     assert bal0 == 0, f"fresh wallet not zero: {bal0}"
 
+    rec.event("wallet", f"wipe done, arming {AMOUNT} sat request")
     st = cashu_me.create_request(AMOUNT)
     assert "Ask the sender" in st, f"not armed: {st!r}"
+    rec.event("wallet", "armed", amount=AMOUNT)
+    rec.still("armed-request")
 
     # ---- field arbitration: exactly one reader live for this phase ----
     grant("nucula" if "Nucula" in reader else "acr")
 
+    rec.event("nfc", f"field granted; payer connecting via {reader}")
     payer = Type4Payer(reader)
     print(f"[{reader}] ATR:", payer.connect())
     req = payer.read_request()
@@ -91,6 +95,8 @@ def test_nfc_payment_round_trip(bench_places, reader, request, evidence_dir, tmp
     w = payer.write_token(token)
     write_s = round(time.time() - t0, 1)
     print(f"[{reader}] write: {w} in {write_s}s")
+    rec.event("nfc", "token written", reader=reader, chunks=w["chunks"], write_s=write_s)
+    rec.mint_evidence(str(token_file), AMOUNT)
     grant("quiet")  # release the field while the phone redeems over wifi
 
     # watch the request screen (NO navigation — balance_sats would BACK out
@@ -99,6 +105,8 @@ def test_nfc_payment_round_trip(bench_places, reader, request, evidence_dir, tmp
         time.sleep(4)
         txt = ui.screen_text(cashu_me.serial)
         if "Payment received" in txt:
+            rec.event("wallet", "phone shows Payment received")
+            rec.still("payment-received")
             break
         if "failed" in txt.lower():
             pytest.fail(f"phone reported payment failure: {txt[:300]}")

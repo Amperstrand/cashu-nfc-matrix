@@ -55,7 +55,7 @@ jobs:
           --junitxml=hil-junit.xml --timeout=900 --timeout-method=signal
           -m "not soak and not payer"
 
-      - name: release stale labgrid holds (leak class: killed jobs keep places)
+      - name: release stale labgrid holds (killed-run leak class)
         run: |
           for p in phone-s20 nucula-c3 ref-acr1252 m5stick; do
             labgrid-client -p $p release >/dev/null 2>&1 || true

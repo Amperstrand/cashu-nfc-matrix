@@ -77,3 +77,29 @@ the NDEF Type-4 file image (2-byte NLEN prefix + single NDEF record):
 - The bc-taploop lane reads the same phone every 30s (read-only Type-4 NDEF);
   coexists with our probes; its activations can interleave — retry on transient
   reader-unavailable.
+
+## Lessons appended 2026-10-22 (all bench-proven, encoded in suites/)
+
+1. **Fee headroom**: testnut's sat keyset charges input_fee_ppk=100 — a 1-sat
+   token redeems to ZERO (cdk mint returns TransactionUnbalanced(0,0,0) =
+   empty OUTPUTS; the keep-amount rounds away). Always mint >= 2 sats for
+   receive flows; 21 is the house default. Host-side repro: the rig's
+   receives_a_token_back test fails identically — mint /v1/keysets showed
+   input_fee_ppk=100 on the active keyset.
+2. **Phone network**: the wallet must run on the LAB wifi (SSID '2',
+   192.168.13.0/24). The tollgate AP filters egress and the wallet then
+   fails POSTs (swap/redeem) silently against cached balances.
+   bench/wifi_check.sh gates every HIL run; bench/wifi_connect.py fixes it.
+3. **Mint resets**: testnut resets wipe keysets+quotes; wallets with cached
+   keysets must re-add the mint (or be wiped) or fresh tokens decode to 0
+   valid proofs.
+4. **PN7160 first-exchange warm-up (fresh c3-ccid fw)**: the FIRST exchange
+   after idle can answer SW=6400; a brand-new connection then works.
+   Type4Payer.connect() retries through it.
+5. **Do not navigate the phone while a redemption is in flight** —
+   balance_sats() presses BACK (go_home) and disarms the HCE mid-redeem.
+   Watch the request screen text instead; read the balance only after.
+6. The c3-ccid image that was on the board before 2026-10-22 08:05 NEVER
+   activated the phone (reader blind); a fresh build from ccid-firmware-rs
+   main (8c8a8337, c3-ccid preset) coupled instantly. If the nucula reader
+   goes blind again: reflash first, debug second.

@@ -14,12 +14,49 @@ DEFAULT_SERIAL = "RF8NB01ZYAH"
 
 
 def adb(serial: str, *args: str, timeout: float = 30) -> str:
-    out = subprocess.run(
-        ["adb", "-s", serial, *args], capture_output=True, text=True, timeout=timeout
-    )
-    if out.returncode != 0:
-        raise RuntimeError(f"adb {args} failed: rc={out.returncode} {out.stderr.strip()}")
-    return out.stdout
+    """Run adb; hang-proof: stdout goes to a file (no pipe drainage), and the
+    whole process group is killed on timeout (adb's device-side grandchildren
+    hold pipes open forever otherwise — observed as a 25-min wedge mid-soak)."""
+    import os
+    import signal
+    import subprocess
+    import tempfile
+
+    with tempfile.TemporaryFile("w+") as out:
+        proc = subprocess.Popen(
+            ["adb", "-s", serial, *args],
+            stdout=out,
+            stderr=subprocess.STDOUT,  # diagnosable failures (monkey et al.)
+            stdin=subprocess.DEVNULL,
+            start_new_session=True,
+        )
+        try:
+            proc.wait(timeout=timeout)
+        except subprocess.TimeoutExpired:
+            try:
+                os.killpg(proc.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+            raise TimeoutError(f"adb {args[:3]} timed out after {timeout}s")
+        out.seek(0)
+        text = out.read()
+        if proc.returncode != 0:
+            raise RuntimeError(
+                f"adb {args} failed: rc={proc.returncode}: {text.strip()[:300]}"
+            )
+        return text
+
+
+def launch_app(serial: str, package: str, timeout: float = 30) -> str:
+    """Resolve the launcher activity then start it (monkey is flaky; a bare
+    component would break across activities being renamed)."""
+    out = adb(serial, "shell", "cmd", "package", "resolve-activity", "--brief",
+              "-c", "android.intent.category.LAUNCHER", package, timeout=timeout)
+    lines = [ln.strip() for ln in out.splitlines() if ln.strip()]
+    comp = lines[-1] if lines else ""
+    if "/" not in comp:
+        raise RuntimeError(f"cannot resolve launcher for {package}: {out.strip()[:200]}")
+    return adb(serial, "shell", "am", "start", "-n", comp, timeout=timeout)
 
 
 def dump(serial: str = DEFAULT_SERIAL) -> ET.Element:

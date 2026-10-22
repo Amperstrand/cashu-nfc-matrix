@@ -17,7 +17,7 @@ critical path: phone↔nucula flows never write the ACR's emulated memory.
 
 | Wallet | Platform | NFC mode | vs nucula CE (phone reads) | vs nucula reader (phone presents) | Status |
 |---|---|---|---|---|---|
-| cashu.me v0.2.0 (cashubtc/wallet) | native Android (Capacitor) | HCE Type-4 NDEF, AID D2760000850101; armed=request+amount; accepts token write-back (cashuA/B, crawB MIME); reader mode on Send→Tap | pending nucula-CE presentation | **protocol GO** (bench/PROTOCOL.md), **bench NO-GO**: phone sits on ACR antenna, not PN7160 (manual move needed); ACR read of HCE PROVEN 2026-10-21 (creqA live-decoded) | driver + probe done (drivers/, bench/) |
+| cashu.me v0.2.0 (cashubtc/wallet) | native Android (Capacitor) | HCE Type-4 NDEF, AID D2760000850101; armed=request+amount; accepts token write-back (cashuA/B, crawB MIME); reader mode on Send→Tap | pending nucula-CE presentation | **FULL ROUND-TRIP PROVEN 2026-10-22** (T5 green, 189s automated): request read + token WRITE + redeem through the nucula reader on fresh ccid-firmware-rs; note fee headroom rule (>=2 sat) | driver + probe + payer done |
 | Numo v1.9 (cashubtc/Numo, PoS) | native Android | HCE Type-4 NDEF armed on Charge screen; request = `BITCOIN:?CREQ=creqB(bech32)`; CC byte-identical to cashu.me | n/a (it IS the receiver side) | same geometry constraint; ACR read PROVEN live (117B NDEF, 2026-10-21) | onboarded + probed |
 | minibits v0.4.5-beta.1 (minibits-cash) | React Native (play/zapstore/github) | reader (reads requests, pays + writes token back) + HCE share (dynamic registration via react-native-hce; `requireDeviceUnlock=false`) | TBD | TBD | installed; onboarding BLOCKED at Terms fetch — phone-side egress filter on bench AP suspected (host 200, phone fail; Nostr relays blocked likewise) |
 | eNuts (cashubtc/eNuts) | React Native (TestFlight/alpha) | NFC reader per enuts.cash ("QR and NFC ready"); HCE TBD | TBD | TBD | inventory only (alpha rebuild in flight; APK = v1.0.0-alpha.2) |
@@ -26,7 +26,34 @@ critical path: phone↔nucula flows never write the ACR's emulated memory.
 NFC-capable but not Android-reachable per Numo's compatibility list: Sovran (iOS),
 Macadamia (iOS). Phoenix listed as tap-to-pay compatible (ecash support unverified).
 
-## Layout (planned)
+## Running the suites
+
+```
+# local (ALWAYS under tmux — a killed foreground pytest leaks its labgrid
+# places; twice bitten):
+tmux new -d -s matrix-hil 'cd cashu-nfc-matrix && /usr/bin/python3 -m pytest \
+  suites/ -v --hil --timeout=600 --timeout-method=signal \
+  -m "not soak and not payer" 2>&1 | tee run.log'
+
+# CI: workflow_dispatch on hil-nfc-matrix (stage smoke|full|soak) —
+# self-hosted bench runner (see below). Plain `pytest` touches no hardware.
+```
+
+What the results mean:
+- SKIPPED "bench busy" — another lane holds a place (labgrid is the arbiter);
+  not a failure.
+- SKIPPED "NO COUPLING" (T2b/T4) — the phone is not on the PN7160 antenna;
+  a bench-geometry fact, not a code defect.
+- Suite discipline: flock before labgrid (in conftest), ACR is read-only
+  (payer refuses it), boltcard HCE apps isolated per module and restored.
+
+Bench runner: `ai-legion-bench-matrix` (systemd
+`actions.runner.Amperstrand-cashu-nfc-matrix.*`, user ubuntu,
+`/opt/actions-runner-matrix`, labels `[self-hosted,Linux,X64,bench]`) —
+provisioned 2026-10-21. Workflow pushes need the SSH remote (the host's gh
+OAuth token lacks `workflow` scope).
+
+## Layout
 
 - `drivers/<wallet>/` — adb/uiautomator driver per wallet (install,
   onboard, send-by-NFC, receive-by-tap; FLAG_SECURE-safe UI driving)

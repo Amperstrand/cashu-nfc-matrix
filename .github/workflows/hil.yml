@@ -1,0 +1,82 @@
+# cashu NFC interop matrix — bench HIL (ai-legion labgrid lab)
+#
+# SECURITY (root-adjacent runner — read before editing triggers):
+#   workflow_dispatch + schedule ONLY. NEVER add pull_request /
+#   pull_request_target: fork PR code would execute on the bench host
+#   (ccid-firmware-rs #183 doctrine, same runner fleet).
+#
+# Runner: [self-hosted, bench] = ai-legion-bench-matrix on ai-legion.
+# Suites flock /tmp/amperstrand-bench.lock BEFORE labgrid acquire (AB-BA)
+# and skip loudly when another lane holds a place.
+
+name: hil-nfc-matrix
+
+on:
+  workflow_dispatch:
+    inputs:
+      stage:
+        description: 'smoke | full | soak'
+        required: false
+        default: 'full'
+      soak_cycles:
+        description: 'cycles when stage=soak'
+        required: false
+        default: '60'
+  schedule:
+    - cron: '37 1 * * *'   # disjoint from nucula fuzz (03:23) + hil (03:23)
+
+permissions:
+  contents: read
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+  ADB_SERVER_SOCKET: 'tcp:127.0.0.1:5037'
+
+jobs:
+  hil:
+    runs-on: [self-hosted, bench]
+    name: NFC wallet matrix
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: bench inventory (coordinator view)
+        run: |
+          set +e
+          labgrid-client -x ai-legion:20408 places > hil-places.txt 2>&1
+          echo "rc=$?" >> hil-places.txt
+          cat hil-places.txt
+          exit 0
+
+      - name: run matrix suites (smoke/full)
+        if: inputs.stage != 'soak'
+        run: >
+          /usr/bin/python3 -m pytest suites/ -v --hil
+          --junitxml=hil-junit.xml --timeout=900 --timeout-method=signal
+          -m "not soak and not payer"
+
+      - name: run soak
+        if: inputs.stage == 'soak'
+        run: >
+          /usr/bin/python3 -m pytest suites/test_t3_soak.py -v --hil
+          --soak-cycles "${{ inputs.soak_cycles || '60' }}"
+          --junitxml=hil-junit.xml --timeout=7200 --timeout-method=signal
+          -m soak
+
+      - name: junit artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with: { name: hil-junit, path: hil-junit.xml }
+
+      - name: evidence artifacts (probe dumps, soak rows)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hil-evidence
+          path: results/
+          if-no-files-found: ignore
+
+      - name: bench inventory artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with: { name: hil-places, path: hil-places.txt, if-no-files-found: ignore }

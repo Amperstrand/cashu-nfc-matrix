@@ -24,11 +24,21 @@ def _alarm(signum, frame):
     raise TransmitTimeout("transmit watchdog fired")
 
 
+_READER_CACHE: dict = {}
+
+
 def get_acr(subst: str = "ACR1252"):
-    cands = [x for x in readers() if subst in str(x)]
+    """Reader by substring, with a process-wide cache: pyscard's contexts die
+    by GC between readers() and connect() otherwise ('Context already
+    released' — observed as flaky mid-suite failures)."""
+    global _READER_CACHE
+    cands = [name for name in _READER_CACHE if subst in name]
+    if not cands:
+        _READER_CACHE = {str(r): r for r in readers()}
+        cands = [name for name in _READER_CACHE if subst in name]
     if not cands:
         raise RuntimeError(f"reader matching {subst!r} not present in pcscd")
-    return cands[0]
+    return _READER_CACHE[cands[0]]
 
 
 def read_ndef_request(subst: str = "ACR1252") -> dict:

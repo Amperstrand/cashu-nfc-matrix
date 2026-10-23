@@ -96,6 +96,28 @@ def refresh_readme(md: str) -> None:
     README.write_text(t)
 
 
+def _staleness_mark(cell_hint: str) -> str:
+    """Fresh/aging/stale mark from registry max-age vs last evidence."""
+    try:
+        import yaml
+        reg = yaml.safe_load(
+            (REPO / "matrixctl" / "registry.yaml").read_text())["cells"]
+    except Exception:
+        return ""
+    # map evidence reader back to registry cell names (best-effort)
+    for name, c in reg.items():
+        if cell_hint and cell_hint in name:
+            age = __import__("matrixctl.next", fromlist=["next"]) \
+                .last_evidence_age_d(name)
+            if age is None:
+                return " (never)"
+            ma = c.get("max_age_d")
+            if ma is None:
+                return ""
+            return " (stale!)" if age > ma else " (fresh)" if age < ma / 2 else " (aging)"
+    return ""
+
+
 def main() -> int:
     cells = collect()
     md = render(cells)

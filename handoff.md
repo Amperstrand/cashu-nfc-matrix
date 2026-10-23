@@ -243,3 +243,11 @@
 - Remaining matrix work re-targets ACR1252/CardMan ONLY. Phone must move
   onto the ACR stack (on top of the m5stick = phone>m5stick>ACR) for
   T5[ACR] + the m5stick x ACR crosstalk probes.
+
+## 2026-10-23 ~19:0x — #408 ROUND-2 VERIFIED: 40ms (10x total)
+
+- Late-captured background probe (ran against round-2 firmware just before
+  the bolty reflash): 53 chunks median 40.0ms constant (39.8-40.1), 2.1s
+  total. Curve: 400 -> 210 -> 40ms. Natural peer response ~25-35ms (matches
+  m5stick 34ms). PR #445 comment posted — verification COMPLETE host-side;
+  0xD2 word-8 cross-check = optional next-CCID-window follow-up.

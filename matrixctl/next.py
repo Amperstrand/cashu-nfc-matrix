@@ -87,7 +87,8 @@ def compute_next(fake: str | None = None) -> dict:
     ranked = []
     for action, override in futures.items():
         st = {"phone": {**state_now["phone"], **override.get("phone", {})},
-              "boards": {**state_now["boards"], **override.get("boards", {})}}
+              "boards": {**state_now["boards"], **override.get("boards", {})},
+              "pcscd": state_now.get("pcscd", {})}
         unlocked, value = [], 0.0
         for name, c in cells.items():
             ok, _ = reg._requires_met(c.get("requires", {}), st)

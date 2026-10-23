@@ -23,14 +23,14 @@ cells:
     max_age_d: 7
     suite: "suites/test_t5_payment_roundtrip.py::test_nfc_payment_round_trip[Nucula CCID]"
   cashu_me-m5stick-read:
-    requires: {phone_at: m5stick-coil}
+    requires: {phone_at: m5stick-coil, pcscd_reader: "M5stick GemPC"}
     tier: core
     cost: {wall_min: 1, wedge: none}
     value: "MFRC522 reader path regression"
     max_age_d: 7
     suite: "suites/test_t2_tap_read.py::test_cashu_me_request[M5stick GemPC]"
   cashu_me-m5stick-payment:
-    requires: {phone_at: m5stick-coil}
+    requires: {phone_at: m5stick-coil, pcscd_reader: "M5stick GemPC"}
     tier: core
     cost: {wall_min: 3, wedge: "soft wedge after ~7 cycles (ccid-firmware-rs#444)"}
     value: "full-stack MFRC522 regression (T5)"
@@ -44,7 +44,7 @@ cells:
     max_age_d: 30
     suite: "SOAK_READER='Nucula CCID' bench/payment_soak.py"
   soak-m5stick:
-    requires: {phone_at: m5stick-coil}
+    requires: {phone_at: m5stick-coil, pcscd_reader: "M5stick GemPC"}
     tier: extended
     cost: {wall_min: 12, wedge: "#444 soft wedge at ~7 cycles"}
     value: "sustained-traffic drift (#444 tracking)"
@@ -65,7 +65,7 @@ cells:
     max_age_d: 30
     suite: "suites/test_t2_tap_read.py::test_numo_request"
   cashu_me-acr-payment:
-    requires: {phone_at: acr-stack}
+    requires: {phone_at: acr-stack, pcscd_reader: "ACR1252"}
     tier: opportunistic
     cost: {wall_min: 3, wedge: none}
     value: "reference-reader parity column"

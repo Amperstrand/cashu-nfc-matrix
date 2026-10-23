@@ -92,6 +92,13 @@ def _requires_met(req: dict, state: dict) -> tuple[bool, str]:
     want_c3 = req.get("c3")
     if want_c3 and state["boards"].get("c3") != want_c3:
         return False, f"c3 duty {state['boards'].get('c3')!r}, need {want_c3!r}"
+    # reader presence in pcscd (the m5stick serial can be held by another
+    # lane's console daemon -> reader absent regardless of phone position)
+    want_reader = req.get("pcscd_reader")
+    if want_reader:
+        readers = " ".join(state.get("pcscd", {}).get("readers", []))
+        if want_reader not in readers:
+            return False, f"reader {want_reader!r} not in pcscd (serial held?)"
     return True, ""
 
 

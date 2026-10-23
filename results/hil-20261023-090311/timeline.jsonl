@@ -1,0 +1,6 @@
+{"t": 0.0, "wall": "09:03:11", "kind": "run", "text": "start"}
+{"t": 0.0, "wall": "09:03:11", "kind": "follower", "text": "started wire-broker.log"}
+{"t": 0.0, "wall": "09:03:11", "kind": "follower", "text": "started phone-logcat.log"}
+{"t": 227.11, "wall": "09:06:58", "kind": "wallet", "text": "wipe done, arming 21 sat request"}
+{"t": 335.24, "wall": "09:08:46", "kind": "run", "text": "finish", "summary": "FAILURES PRESENT; footage in /tmp/opencode/wallet-matrix/cashu-nfc-matrix/results/hil-20261023-090311"}
+{"t": 335.63, "wall": "09:08:46", "kind": "still", "text": "run-terminal: 100161B -> 090846-run-terminal.png"}

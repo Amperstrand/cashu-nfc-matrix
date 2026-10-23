@@ -17,6 +17,7 @@ Runner requirements (encoded, no LLM in the loop):
 """
 from __future__ import annotations
 
+import os
 import subprocess
 import time
 
@@ -62,9 +63,11 @@ def test_nfc_payment_round_trip(bench_places, reader, request, evidence_dir, rec
         pytest.skip("phone not on lab wifi — run bench/wifi_connect.py")
 
     token_file = tmp_path / "token.txt"
+    mint_url = os.environ.get("MINT_URL", "https://testnut.cashu.space")
+    env = dict(os.environ, MINT_URL=mint_url)
     r = subprocess.run(
         ["bash", "bench/mint_token.sh", str(token_file), str(AMOUNT)],
-        capture_output=True, text=True, timeout=300,
+        capture_output=True, text=True, timeout=300, env=env,
         cwd=str(evidence_dir.parent.parent),
     )
     if r.returncode != 0:
@@ -73,7 +76,7 @@ def test_nfc_payment_round_trip(bench_places, reader, request, evidence_dir, rec
     assert token.startswith("cashu")
 
     cashu_me = CashuMeDriver(serial)
-    cashu_me.wipe()  # conditional onboarding: picker if present, else Mints
+    cashu_me.wipe(setup_mint=mint_url)  # local bench mint when MINT_URL is set
     bal0 = cashu_me.balance_sats()
     assert bal0 == 0, f"fresh wallet not zero: {bal0}"
 

@@ -323,14 +323,38 @@ class CashuMeDriver:
         ui.launch_app(self.serial, self.package)
         time.sleep(4)
         self.ensure_onboarded(prefer_mint=setup_mint)
-        if setup_mint and self.screen_state() == "home":
-            # picker skipped or absent — ensure the mint exists via Mints screen
+        if not setup_mint:
+            return
+        # VERIFY the mint actually exists — the picker flow can fail silently
+        # (ADD control x-offset misses wrapped rows; http:// URLs are rejected
+        # by the wallet's HTTPS-only validation with no onboarding error)
+        host = setup_mint.split("//")[-1].split("/")[0]
+        if self._mint_present(host):
+            return
+        for attempt in range(2):
             try:
                 self.add_mint(setup_mint)
             except (TimeoutError, DriverError):
-                # mint may already be there (picker path succeeded)
-                if "Testnut" not in ui.screen_text(self.serial):
-                    raise
+                pass
+            if self._mint_present(host):
+                return
+            time.sleep(2)
+        raise DriverError(
+            f"wipe: mint {setup_mint!r} not present after onboarding + retries "
+            f"(wallet rejects non-HTTPS mint URLs — serve it over TLS or pick "
+            f"another mint)")
+
+    def _mint_present(self, host: str) -> bool:
+        """True if the Mints screen lists a mint for host."""
+        for _ in range(3):
+            state = self.screen_state()
+            if state == "home":
+                ui.adb(self.serial, "shell", "input", "tap", "908", "2092")
+                time.sleep(1.5)
+                return host in ui.screen_text(self.serial)
+            ui.adb(self.serial, "shell", "input", "keyevent", "KEYCODE_BACK")
+            time.sleep(1.0)
+        return False
 
     def add_mint(self, url: str) -> None:
         """Mints screen -> Add mint -> url. No-op-friendly: state-routed."""

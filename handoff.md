@@ -339,3 +339,16 @@
   wallet-matrix fully disposable (old checkout there is stale; repo lives
   in ~/src/wallet-matrix).
 - plan --tier now accepts opportunistic (was missing from choices).
+
+## 2026-10-23 ~22:3x — plan step 4 code-only parts DONE (blocked-window work)
+
+- (a) CI: smoke stage = survey + plan --tier core + pytest -m 'not extended';
+  full = core+extended (marker registered; numo marked extended). matrixctl
+  plan/run dry-run prints the cell mapping in every CI log.
+- (b) geometry.md: measured placement laws (phone FACE-DOWN, coil center-
+  upper back; m5stick BESIDE never between; c3-ok-as-spacer; centering)
+  + 4 photo TODO slots for the owner.
+- (c) renderer: staleness color marks (green/yellow/red age vs registry
+  max-age; white=no budget; orange=never proven) + result red/green —
+  README table now self-describing.
+- 11 plain tests green. ACR replug still pending (thread resumes on 'done').

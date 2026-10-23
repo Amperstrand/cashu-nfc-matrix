@@ -1,0 +1,5 @@
+{"t": 0.0, "wall": "21:45:04", "kind": "run", "text": "start"}
+{"t": 0.0, "wall": "21:45:04", "kind": "follower", "text": "started wire-broker.log"}
+{"t": 0.0, "wall": "21:45:04", "kind": "follower", "text": "started phone-logcat.log"}
+{"t": 0.58, "wall": "21:45:05", "kind": "run", "text": "finish", "summary": "all green; footage in /tmp/opencode/wallet-matrix/cashu-nfc-matrix/results/hil-20261022-214504"}
+{"t": 0.93, "wall": "21:45:05", "kind": "still", "text": "run-terminal: 67438B -> 214505-run-terminal.png"}

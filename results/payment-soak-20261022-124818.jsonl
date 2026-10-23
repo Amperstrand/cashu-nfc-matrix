@@ -1,0 +1,15 @@
+{"cycle": 0, "ts": "12:48:26", "mint_s": 2.1, "nfc_s": 29.8, "chunks": 53, "credited": 20, "ok": true, "cycle_s": 88.5}
+{"cycle": 1, "ts": "12:49:55", "mint_s": 1.8, "nfc_s": 29.8, "chunks": 53, "credited": 20, "ok": true, "cycle_s": 88.2}
+{"cycle": 2, "ts": "12:51:23", "mint_s": 2.0, "nfc_s": 29.8, "chunks": 53, "credited": 20, "ok": true, "cycle_s": 88.6}
+{"cycle": 3, "ts": "12:52:51", "mint_s": 1.6, "nfc_s": 29.8, "chunks": 53, "credited": 20, "ok": true, "cycle_s": 87.9}
+{"cycle": 4, "ts": "12:54:19", "mint_s": 1.7, "nfc_s": 29.8, "chunks": 53, "credited": 20, "ok": true, "cycle_s": 88.4}
+{"cycle": 5, "ts": "12:55:48", "mint_s": 1.6, "nfc_s": 29.8, "chunks": 53, "credited": 20, "ok": true, "cycle_s": 88.2}
+{"cycle": 6, "ts": "12:57:16", "mint_s": 1.8, "nfc_s": 29.8, "chunks": 53, "credited": 20, "ok": true, "cycle_s": 88.4}
+{"cycle": 7, "ts": "12:58:44", "mint_s": 1.7, "nfc_s": 29.8, "chunks": 53, "credited": 20, "ok": true, "cycle_s": 88.0}
+{"cycle": 8, "ts": "13:00:12", "mint_s": 2.1, "nfc_s": 29.8, "chunks": 53, "credited": 20, "ok": true, "cycle_s": 88.4}
+{"cycle": 9, "ts": "13:01:41", "mint_s": 1.8, "nfc_s": 29.8, "chunks": 53, "credited": 20, "ok": true, "cycle_s": 88.3}
+{"cycle": 10, "ts": "13:03:09", "mint_s": 1.7, "nfc_s": 29.8, "chunks": 53, "credited": 20, "ok": true, "cycle_s": 88.1}
+{"cycle": 11, "ts": "13:04:37", "mint_s": 1.9, "nfc_s": 29.8, "chunks": 53, "credited": 20, "ok": true, "cycle_s": 88.3}
+{"cycle": 12, "ts": "13:06:05", "mint_s": 1.8, "nfc_s": 30.0, "chunks": 53, "credited": 20, "ok": true, "cycle_s": 88.6}
+{"cycle": 13, "ts": "13:07:34", "mint_s": 2.9, "ok": false, "error": "CardConnectionException('Failed to transmit with protocol T1. RPC transport error.')", "recovered": true, "cycle_s": 148.0}
+{"cycle": 14, "ts": "13:10:02", "mint_s": 6.5, "nfc_s": 29.8, "chunks": 53, "credited": 20, "ok": true, "cycle_s": 93.0}

@@ -59,7 +59,14 @@ class BenchLock:
         self.fd = None
 
     def __enter__(self):
-        self.fd = open(BENCH_LOCK, "w")
+        # 0o666: the CI runner (ubuntu) must also flock the shared file
+        import os as _os
+        fd = _os.open(BENCH_LOCK, _os.O_RDWR | _os.O_CREAT, 0o666)
+        try:
+            _os.fchmod(fd, 0o666)  # only the owner can; ok if EPERM
+        except PermissionError:
+            pass
+        self.fd = os.fdopen(fd, "w")
         fcntl.flock(self.fd, fcntl.LOCK_EX)
         return self
 
@@ -112,6 +119,22 @@ def evidence_dir(request) -> Path:
     return d
 
 
+@pytest.fixture(scope="session")
+def rec(request, evidence_dir):
+    """RunRecorder: film-style footage for the whole session (timeline +
+    broker wire + logcat + stills + film.md). See bench/run_recorder.py."""
+    from bench.run_recorder import RunRecorder
+
+    r = RunRecorder(evidence_dir)
+    r.start_default_followers()
+    yield r
+    failed = hasattr(request.session, "testsfailed") and request.session.testsfailed
+    r.finish(summary=f"{'FAILURES PRESENT' if failed else 'all green'}; "
+                     f"footage in {evidence_dir}")
+    # keep a terminal still per policy (cheap, always) for the last state
+    r.still("run-terminal")
+
+
 # ---------------------------------------------------------------- places
 
 
@@ -135,11 +158,19 @@ def phone_place(request):
 
 @pytest.fixture(scope="module")
 def acr_place(request):
-    """ref-acr1252 (READ-ONLY discipline). Heals a wedged ACR IFD with one
-    serialized pcscd restart (a watchdog-killed transmit wedges the reader
-    until pcscd restarts — bench-verified twice)."""
+    """ref-acr1252 in reader mode. FIELD-ARBITRATED: for this module the ACR
+    owns the RF field (nucula broker stopped — its PN7160 parks, idle+deaf).
+    Heals a wedged ACR IFD with one pcscd restart."""
     _need_hil(request)
     held = acquire_places(["ref-acr1252"], why="ACR field read")
+    from bench.field_arbiter import grant
+
+    grant("acr")
+    # buzzer default OFF for automation (best-effort; see acr_peripherals.py)
+    sh(["/usr/bin/python3", "-c",
+        "import sys; sys.path.insert(0, '.'); "
+        "from bench import acr_peripherals as ap; ap.set_buzzer(False)"],
+       timeout=30)
 
     def acr_healthy() -> bool:
         try:
@@ -159,6 +190,9 @@ def acr_place(request):
         sh(["systemctl", "restart", "pcscd"])
         time.sleep(5)
     yield "ACS ACR1252"
+    from bench.field_arbiter import grant as _g
+
+    _g("quiet")
     release_places(held)
 
 

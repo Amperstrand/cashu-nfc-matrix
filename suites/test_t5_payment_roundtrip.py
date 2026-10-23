@@ -1,14 +1,16 @@
-"""T5 — full NFC payment round-trip through the nucula reader.
+"""T5 — full NFC payment round-trip through BOTH readers (static bench).
 
-This is the crown-jewel test: wallet wipe -> fresh onboard -> mint a fake-sat
-token -> arm a matching request -> payer WRITES the token over NFC via the
-nucula CCID reader -> the phone redeems -> balance asserted.
+Two phases, one static stack (nucula wedged between ACR and phone):
+  ["Nucula CCID"] — arbiter grants the field to the nucula (ACR muted)
+  ["ACR1252"]     — arbiter grants the field to the ACR (nucula parked)
+Each phase: mint -> wipe phone wallet -> arm -> read request -> WRITE token
+over NFC -> phone redeems -> balance asserted.
 
-Runner requirements (all encoded, no LLM in the loop):
+Runner requirements (encoded, no LLM in the loop):
 - phone on the LAB wifi (SSID '2', 192.168.13.0/24) — the tollgate AP
-  filters egress and the wallet will silently swap against cached state;
-  bench/wifi_check.sh asserts this precondition
-- nucula-c3 on fresh ccid-firmware-rs (c3-ccid preset); broker + pcscd up
+  filters egress and the wallet will silently swap against cached state
+  (bench/wifi_check.sh asserts this precondition)
+- nucula-c3 on fresh ccid-firmware-rs (c3-ccid preset)
 - the nucula rig (payer feature) for token minting — bench/mint_token.sh
 - FEE HEADROOM: amounts >= 2 sats (testnut input_fee_ppk=100 eats 1-sat
   tokens; cdk mint returns TransactionUnbalanced(0,0,0))
@@ -20,6 +22,7 @@ import time
 
 import pytest
 
+from bench.field_arbiter import grant
 from bench.payer import Type4Payer
 
 pytestmark = pytest.mark.payer
@@ -35,38 +38,66 @@ def _phone_on_lab_wifi(serial: str) -> bool:
     return "192.168.13." in out
 
 
-def test_nfc_payment_round_trip(cashu_me, nucula_reader_place, request, evidence_dir, tmp_path):
-    from drivers import ui
+@pytest.fixture(scope="module")
+def bench_places(request):
+    """All three places for the whole module; fields arbitrated per phase."""
+    from suites.conftest import acquire_places, release_places
 
-    if not _phone_on_lab_wifi(cashu_me.serial):
-        pytest.skip("phone not on lab wifi (192.168.13.x) — connect via "
-                    "bench/wifi_connect.py; the tollgate AP filters egress")
+    if not request.config.getoption("--hil"):
+        pytest.skip("hardware gated: pass --hil on the bench runner")
+    held = acquire_places(["phone-s20", "nucula-c3", "ref-acr1252"],
+                          why="T5 dual-reader payment")
+    yield held
+    grant("quiet")
+    release_places(held)
+
+
+@pytest.mark.parametrize("reader", ["Nucula CCID", "ACR1252", "M5stick GemPC"])
+def test_nfc_payment_round_trip(bench_places, reader, request, evidence_dir, rec, tmp_path):
+    from drivers import ui
+    from drivers.cashu_me import CashuMeDriver
+
+    serial = "RF8NB01ZYAH"
+    if not _phone_on_lab_wifi(serial):
+        pytest.skip("phone not on lab wifi — run bench/wifi_connect.py")
 
     token_file = tmp_path / "token.txt"
     r = subprocess.run(
         ["bash", "bench/mint_token.sh", str(token_file), str(AMOUNT)],
-        capture_output=True, text=True, timeout=300, cwd=str(evidence_dir.parent.parent),
+        capture_output=True, text=True, timeout=300,
+        cwd=str(evidence_dir.parent.parent),
     )
     if r.returncode != 0:
         pytest.skip(f"mint failed (rig/mint reachable?): {r.stdout[-200:]}")
     token = token_file.read_text().strip()
     assert token.startswith("cashu")
 
-    cashu_me.wipe()  # conditional onboarding: picker used if present, else Mints screen
+    cashu_me = CashuMeDriver(serial)
+    cashu_me.wipe()  # conditional onboarding: picker if present, else Mints
     bal0 = cashu_me.balance_sats()
     assert bal0 == 0, f"fresh wallet not zero: {bal0}"
 
+    rec.event("wallet", f"wipe done, arming {AMOUNT} sat request")
     st = cashu_me.create_request(AMOUNT)
     assert "Ask the sender" in st, f"not armed: {st!r}"
+    rec.event("wallet", "armed", amount=AMOUNT)
+    rec.still("armed-request")
 
-    payer = Type4Payer("Nucula CCID")
-    print("ATR:", payer.connect())
+    # ---- field arbitration: exactly one reader live for this phase ----
+    grant({"Nucula": "nucula", "ACR": "acr", "M5stick": "m5stick"}[reader.split()[0] if reader.split()[0] in ("Nucula", "ACR") else "M5stick"])
+
+    rec.event("nfc", f"field granted; payer connecting via {reader}")
+    payer = Type4Payer(reader)
+    print(f"[{reader}] ATR:", payer.connect())
     req = payer.read_request()
     assert req.get("a") == AMOUNT, f"wrong request over NFC: {req}"
     t0 = time.time()
     w = payer.write_token(token)
     write_s = round(time.time() - t0, 1)
-    print(f"write: {w} in {write_s}s")
+    print(f"[{reader}] write: {w} in {write_s}s")
+    rec.event("nfc", "token written", reader=reader, chunks=w["chunks"], write_s=write_s)
+    rec.mint_evidence(str(token_file), AMOUNT)
+    grant("quiet")  # release the field while the phone redeems over wifi
 
     # watch the request screen (NO navigation — balance_sats would BACK out
     # and disarm mid-redemption; learned the hard way)
@@ -74,6 +105,8 @@ def test_nfc_payment_round_trip(cashu_me, nucula_reader_place, request, evidence
         time.sleep(4)
         txt = ui.screen_text(cashu_me.serial)
         if "Payment received" in txt:
+            rec.event("wallet", "phone shows Payment received")
+            rec.still("payment-received")
             break
         if "failed" in txt.lower():
             pytest.fail(f"phone reported payment failure: {txt[:300]}")
@@ -86,7 +119,7 @@ def test_nfc_payment_round_trip(cashu_me, nucula_reader_place, request, evidence
         f"expected {AMOUNT - 1} net of 1-sat input fee, got {credited} "
         f"({bal0} -> {bal1})"
     )
-    (evidence_dir / "t5-roundtrip.txt").write_text(
-        f"amount={AMOUNT} credited={credited} write_s={write_s} "
-        f"chunks={w['chunks']} bytes={w['bytes']}\n"
+    (evidence_dir / f"t5-roundtrip-{reader.replace(' ', '-').lower()}.txt").write_text(
+        f"reader={reader} amount={AMOUNT} credited={credited} "
+        f"write_s={write_s} chunks={w['chunks']} bytes={w['bytes']}\n"
     )

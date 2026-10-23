@@ -60,3 +60,95 @@
 - No external posts; wallet upstreams untouched; secrets never committed.
 - End-of-session: restore boltcard apps if disabled, broker+pcscd healthy,
   places released (already), this file updated.
+
+## 2026-10-22 evening window — perf root-cause (ccid-firmware-rs#408)
+
+- LIVE MEASURED: nucula write leg = 400.0 ms/chunk CONSTANT (53/53 within
+  1.2 ms band; 21.2 s total) vs ACR1252 ~15 ms/chunk (0.8 s). Timer, not RF.
+- ROOT CAUSE: pn7160-nci exchange = poll-round based (12x200 ms) + credit
+  gating -> small APDU burns 2 full rounds = 400 ms regardless of the
+  phone answering in ~5 ms. Source: crates/pn7160-nci/src/lib.rs exchange.
+- FILED: ccid-firmware-rs#408 (cross-refs #119/#137/#120/#261), fix =
+  harvest-before-sleep (0-ms poll after TX/credit) with rounds as fallback;
+  verification via 0xD2 turnaround probe + T5 write timing.
+- TOOL: bench/write_latency_probe.py (any reader, per-chunk us timing),
+  commit c5feead. Comments posted on #408 and nucula#33.
+- Journal-timestamp caveat: journalctl short-iso has NO sub-second —
+  wire-log delta analysis only bounds latency to whole seconds; host-side
+  perf_counter is the precise instrument.
+- CI-payment item still waits on mint executing as the ubuntu runner
+  (root-created files unreadable by ubuntu on this host even at 0666/777 —
+  LSM-class; workaround: run mint step as root or prebuild the test binary).
+
+## 2026-10-22 late window — CI PAYMENT GREEN (after 8 dispatches)
+
+- **T5[Nucula CCID] PASSED ON CI (run 39845791451)**: first fully
+  CI-driven NFC payment (runner mints, arms, writes over NFC, phone
+  redeems, balance asserted). Evidence in the run's artifacts.
+- Dispatch-chain root causes fixed along the way (each one a commit):
+  stale root-owned /tmp/mint logs vs runner user -> per-PID temp files;
+  runner HOME unset -> old /usr/bin/cargo 1.75 vs lockfile v4 -> absolute
+  cargo resolution to /home/ubuntu/.cargo/bin; unquoted colon in step
+  name broke workflow_dispatch (yaml parse); killed-run labgrid leaks ->
+  pre-step releases stale holds; arbiter ops as ubuntu were polkit/EACCES
+  no-ops -> sudo -n elevation (ubuntu has NOPASSWD); ACR bind hardcode
+  '1-4' stale on replug -> live sysfs path via pyusb; owner-state /tmp
+  file root<->runner collisions -> per-user fallback.
+- cdk rig: /home/ubuntu/src/cdk is a SYMLINK into /root (700) — the whole
+  'LSM' theory was that; dereferenced ubuntu-owned copy at /opt/bench/cdk;
+  rig at /opt/bench/nucula-rig builds as ubuntu (cargo 1.99).
+- M5stick cell BLOCKED (hardware, foreign): /dev/ttyUSB3 held by root
+  python3 (PID 2059177, another lane) and the stick answers its CONSOLE
+  protocol ('unknown: ... nfc') — not in GemPC reader mode; pcscd
+  'M5stick GemPC init failed' every restart since 22:19. Not ours to kill.
+- ACR cell: grant+reader verified working as ubuntu locally; CI failure
+  at 20:19 was pre-sudo-fix run; expect green on next dispatch.
+
+## 2026-10-23 — BENCH-LOCAL MINT LIVE (determinism unlock done)
+
+- systemd `micronuts-demo-mint` (enabled, 0.0.0.0:3338): micronuts-audit-adapter
+  bridging the stdio mint_server over Cashu REST. Zero input fees, in-memory.
+- VALIDATED end-to-end from host: rig mint (21 sat, 2715-char cashuB, m=127.0.0.1:3338)
+  -> cdk wallet receive -> RECEIVED=21 in 0.21s total. No testnut in the loop.
+- Gotchas hit + resolved: (1) adapter binary lives at /root/.cargo-target/debug/
+  (cargo config target-dir — NOT ./target); mint_server at /root/src/micronuts/target.
+  (2) `cargo build -p A --bin X -p B` silently builds nothing for B — build
+  packages separately. (3) mint_token.sh reads MINT_URL not MINT — a token with
+  m=testnut against the local mint yields UnknownShortKeysetId (client-side,
+  red herring; the adapter's keyset id IS correct CDK-v1 form).
+- Next: switch T5/soak default to MINT_URL=http://<lan-ip>:3338 + phone add_mint
+  (add_mint flow already in driver); then CI payments stop depending on testnut.
+
+## 2026-10-23 checkpoint 2 — PR #4 open; mint switch mapped; ACR healthy
+
+- PR #4 (hil-suites -> main) opened with full evidence body.
+- Local mint reachable from PHONE subnet: host = 192.168.13.208, service on
+  0.0.0.0:3338 -> phone add_mint target = http://192.168.13.208:3338.
+- ACR wedge report (micronuts #132 work): checked 01:3x — USB present
+  (072f:223b dev 030) AND enumerates in pcscd; no wedge visible now
+  (replug may have happened or it self-recovered). T5[ACR] still gated on
+  phone placement, not reader health.
+- NEXT (T5 local-mint switch): wipe() currently hardcodes testnut in
+  drivers/cashu_me.py (mint-picker ADD at x~924); parametrize wipe/add_mint
+  with MINT_URL default http://192.168.13.208:3338, then T5/soak run
+  fully bench-local. Procedure proven at CLI level (RECEIVED=21, 0.21s).
+
+## 2026-10-23 ~04:40 — RED CI TRIAGED: DISK FULL (owner decision needed)
+
+- Runs 39886689060 (scheduled, main) + 39852224171: runner EXECUTED the suite
+  (01:55 job ran 11 min) but died uploading — / is 100% (685 MB free of 937G).
+  NOT the ACR (USB dev 030 present, pcscd-healthy; no wedge).
+- Safe cleanups already done in my domain: scratch logs/probe dirs removed;
+  docker image prune (sweeper-sanctioned, dangling) reclaimed 0B.
+- NOT mine to delete (owner decision list, ranked):
+    /home/ubuntu            287G  (lane data: src 79G, avd-goldens 19G,
+                                   .bitcoin 12G, tollgate-virtual-lab 13G...)
+    /root/src/worktrees     74G   (release-verify worktrees + their target/)
+    /root/.cargo-target     48G   (SHARED live build cache — deleting breaks
+                                   phone-hil/other live builds mid-flight)
+    /root/src/ccid-firmware-rs 17G (repo + targets; sweeper phase-aware)
+- Until / has multi-GB free: CI will keep failing uploads; suites writing
+  evidence dirs may also fail. RECOMMEND: owner-gated deep sweep or pausing
+  lanes for one sweeper pass with phases enabled.
+- PR #4 landed (squash) unless merge failed — see report. Queue unchanged:
+  wipe/add_mint parametrization + T5 on local mint (192.168.13.208:3338).

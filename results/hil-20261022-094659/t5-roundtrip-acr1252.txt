@@ -1,0 +1,1 @@
+reader=ACR1252 amount=21 credited=20 write_s=0.8 chunks=53 bytes=2734

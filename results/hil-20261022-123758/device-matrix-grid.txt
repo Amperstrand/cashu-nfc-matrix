@@ -1,0 +1,4 @@
+# live device-matrix grid (readers)
+- acr1252: ABSENT | -
+- nucula-pn7160: ABSENT | -
+- m5stick-mfrc522: ABSENT | -

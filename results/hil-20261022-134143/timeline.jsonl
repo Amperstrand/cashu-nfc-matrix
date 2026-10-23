@@ -1,0 +1,13 @@
+{"t": 0.0, "wall": "13:41:43", "kind": "run", "text": "start"}
+{"t": 0.0, "wall": "13:41:43", "kind": "follower", "text": "started wire-broker.log"}
+{"t": 0.0, "wall": "13:41:43", "kind": "follower", "text": "started phone-logcat.log"}
+{"t": 97.57, "wall": "13:43:21", "kind": "wallet", "text": "wipe done, arming 21 sat request"}
+{"t": 127.51, "wall": "13:43:51", "kind": "wallet", "text": "armed", "amount": 21}
+{"t": 127.83, "wall": "13:43:51", "kind": "still", "text": "armed-request: 125537B -> 134351-armed-request.png"}
+{"t": 144.62, "wall": "13:44:08", "kind": "nfc", "text": "field granted; payer connecting via Nucula CCID"}
+{"t": 174.44, "wall": "13:44:38", "kind": "nfc", "text": "token written", "reader": "Nucula CCID", "chunks": 53, "write_s": 22.0}
+{"t": 174.44, "wall": "13:44:38", "kind": "mint", "text": "21 sats token, 2722 chars"}
+{"t": 191.51, "wall": "13:44:55", "kind": "wallet", "text": "phone shows Payment received"}
+{"t": 191.84, "wall": "13:44:55", "kind": "still", "text": "payment-received: 65638B -> 134455-payment-received.png"}
+{"t": 212.51, "wall": "13:45:16", "kind": "run", "text": "finish", "summary": "all green; footage in /tmp/opencode/wallet-matrix/cashu-nfc-matrix/results/hil-20261022-134143"}
+{"t": 212.89, "wall": "13:45:16", "kind": "still", "text": "run-terminal: 108247B -> 134516-run-terminal.png"}

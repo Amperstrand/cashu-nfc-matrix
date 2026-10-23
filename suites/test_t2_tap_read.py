@@ -89,7 +89,18 @@ def test_unarmed_e104_absent(cashu_me, acr_place):
         capture_output=True, text=True).stdout.find("com.electricdreams.numo") < 0,
     reason="Numo not installed on bench phone",
 )
-@pytest.mark.parametrize("reader", ["ACR1252", "M5stick GemPC"])
+def _reader_params():
+    import pytest as _pytest
+    from bench import geometry
+    out = []
+    for r in ("ACR1252", "M5stick GemPC"):
+        live, reason = geometry.cell_live(r)
+        marks = [] if live else [_pytest.mark.skip(reason=reason)]
+        out.append(_pytest.param(r, marks=marks))
+    return out
+
+
+@pytest.mark.parametrize("reader", _reader_params())
 def test_numo_request(phone_place, acr_place, evidence_dir, reader):
     """Numo v1.9 PoS: Charge screen arms HCE; request is BIP21+CREQ or
     BIP21+LIGHTNING (both observed on the bench; both are NDEF URI records).

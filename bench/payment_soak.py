@@ -61,7 +61,8 @@ def main() -> int:
     bal = d.balance_sats()
     print(f"start balance={bal} reader={READER} cycles={CYCLES}", flush=True)
     for i in range(CYCLES):
-        rec: dict = {"cycle": i, "ts": time.strftime("%H:%M:%S")}
+        rec: dict = {"cycle": i, "ts": time.strftime("%H:%M:%S"),
+                     "reader": READER, "wallet": "cashu_me"}
         t0 = time.time()
         try:
             mint("/tmp/soak-token.txt")

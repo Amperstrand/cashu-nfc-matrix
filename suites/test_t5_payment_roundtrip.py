@@ -53,7 +53,18 @@ def bench_places(request):
     release_places(held)
 
 
-@pytest.mark.parametrize("reader", ["Nucula CCID", "ACR1252", "M5stick GemPC"])
+def _reader_params():
+    import pytest as _pytest
+    from bench import geometry
+    out = []
+    for r in ("Nucula CCID", "ACR1252", "M5stick GemPC"):
+        live, reason = geometry.cell_live(r)
+        marks = [] if live else [_pytest.mark.skip(reason=reason)]
+        out.append(_pytest.param(r, marks=marks))
+    return out
+
+
+@pytest.mark.parametrize("reader", _reader_params())
 def test_nfc_payment_round_trip(bench_places, reader, request, evidence_dir, rec, tmp_path):
     from drivers import ui
     from drivers.cashu_me import CashuMeDriver

@@ -1,0 +1,16 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.1.1, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+metadata: {'Python': '3.12.3', 'Platform': 'Linux-7.0.0-34-generic-x86_64-with-glibc2.39', 'Packages': {'pytest': '9.1.1', 'pluggy': '1.6.0'}, 'Plugins': {'allure-pytest': '2.16.2', 'metadata': '3.1.1', 'rerunfailures': '16.7', 'json-report': '1.5.0', 'labgrid': '26.0', 'timeout': '2.4.0'}}
+rootdir: /tmp/opencode/wallet-matrix/cashu-nfc-matrix
+configfile: pytest.ini
+plugins: allure-pytest-2.16.2, metadata-3.1.1, rerunfailures-16.7, json-report-1.5.0, labgrid-26.0, timeout-2.4.0
+timeout: 900.0s
+timeout method: signal
+timeout func_only: False
+collecting ... collected 1 item
+
+suites/test_t5_payment_roundtrip.py::test_nfc_payment_round_trip[M5stick GemPC] SKIPPED [100%]
+
+============================== 1 skipped in 1.97s ==============================
+DONE

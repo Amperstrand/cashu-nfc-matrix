@@ -1,0 +1,123 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.1.1, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+metadata: {'Python': '3.12.3', 'Platform': 'Linux-7.0.0-34-generic-x86_64-with-glibc2.39', 'Packages': {'pytest': '9.1.1', 'pluggy': '1.6.0'}, 'Plugins': {'allure-pytest': '2.16.2', 'metadata': '3.1.1', 'rerunfailures': '16.7', 'json-report': '1.5.0', 'labgrid': '26.0', 'timeout': '2.4.0'}}
+rootdir: /tmp/opencode/wallet-matrix/cashu-nfc-matrix
+configfile: pytest.ini
+plugins: allure-pytest-2.16.2, metadata-3.1.1, rerunfailures-16.7, json-report-1.5.0, labgrid-26.0, timeout-2.4.0
+timeout: 600.0s
+timeout method: signal
+timeout func_only: False
+collecting ... collected 5 items / 3 deselected / 2 selected
+
+suites/test_t2_tap_read.py::test_numo_request[ACR1252] RERUN             [ 50%]
+suites/test_t2_tap_read.py::test_numo_request[ACR1252] RERUN             [ 50%]
+suites/test_t2_tap_read.py::test_numo_request[ACR1252] FAILED            [ 50%]
+suites/test_t2_tap_read.py::test_numo_request[M5stick GemPC] PASSED      [100%]/usr/local/lib/python3.12/dist-packages/_pytest/unraisableexception.py:67: PytestUnraisableExceptionWarning: Exception ignored in: <function PCSCCardConnection.__del__ at 0x7a33987bd580>
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/smartcard/pcsc/PCSCCardConnection.py", line 121, in __del__
+    self.release()
+  File "/usr/local/lib/python3.12/dist-packages/smartcard/pcsc/PCSCCardConnection.py", line 130, in release
+    raise CardConnectionException(
+smartcard.Exceptions.CardConnectionException: Failed to release context: Service not available.: Service not available. (0x8010001D)
+
+Enable tracemalloc to get traceback where the object was allocated.
+See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+  warnings.warn(pytest.PytestUnraisableExceptionWarning(msg))
+
+
+=================================== FAILURES ===================================
+__________________________ test_numo_request[ACR1252] __________________________
+
+phone_place = 'RF8NB01ZYAH', acr_place = 'ACS ACR1252'
+evidence_dir = PosixPath('/tmp/opencode/wallet-matrix/cashu-nfc-matrix/results/hil-20261023-170015')
+reader = 'ACR1252'
+
+    @pytest.mark.flaky(reruns=2, reruns_delay=45)
+    @pytest.mark.skipif(
+        __import__("subprocess").run(
+            ["adb", "-s", __import__("drivers.ui", fromlist=["ui"]).DEFAULT_SERIAL,
+             "shell", "pm", "list", "packages"],
+            capture_output=True, text=True).stdout.find("com.electricdreams.numo") < 0,
+        reason="Numo not installed on bench phone",
+    )
+    @pytest.mark.parametrize("reader", ["ACR1252", "M5stick GemPC"])
+    def test_numo_request(phone_place, acr_place, evidence_dir, reader):
+        """Numo v1.9 PoS: Charge screen arms HCE; request is BIP21+CREQ or
+        BIP21+LIGHTNING (both observed on the bench; both are NDEF URI records).
+        """
+        import sys
+        import time
+    
+        sys.path.insert(0, ".")
+        from drivers import ui
+        from drivers.numo import NumoDriver
+    
+        d = NumoDriver(phone_place)
+        try:
+            d.launch()
+            d.charge(33)
+            assert d.is_armed(), f"numo not armed: {d.screen()!r}"
+            # isolate: cashu.me is the AID default; disable it for this probe
+            ui.adb(phone_place, "shell", "pm", "disable-user", "--user", "0", "com.cashu.me")
+            time.sleep(1.0)
+>           res = _probe_with_retries(reader)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+suites/test_t2_tap_read.py:112: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+suites/test_t2_tap_read.py:39: in _probe_with_retries
+    raise last
+suites/test_t2_tap_read.py:32: in _probe_with_retries
+    return read_ndef_request(subst)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+bench/probe_acr.py:57: in read_ndef_request
+    c.connect()
+/usr/local/lib/python3.12/dist-packages/smartcard/CardConnectionDecorator.py:52: in connect
+    self.component.connect(protocol, mode, disposition)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <smartcard.pcsc.PCSCCardConnection.PCSCCardConnection object at 0x7a3398698920>
+protocol = None, mode = 2, disposition = 2
+
+    def connect(self, protocol=None, mode=None, disposition=None):
+        """Connect to the card.
+    
+        If protocol is not specified, connect with the default
+        connection protocol.
+    
+        If mode is not specified, connect with
+        C{smartcard.scard.SCARD_SHARE_SHARED}."""
+        CardConnection.connect(self, protocol)
+        pcscprotocol = translateprotocolmask(protocol)
+        if 0 == pcscprotocol:
+            pcscprotocol = self.getProtocol()
+    
+        if mode is None:
+            mode = SCARD_SHARE_SHARED
+    
+        # store the way to dispose the card
+        if disposition is None:
+            disposition = SCARD_UNPOWER_CARD
+        self.disposition = disposition
+    
+        if self.hcontext is None:
+            raise CardConnectionException("Context already released")
+    
+        hresult, self.hcard, dwActiveProtocol = SCardConnect(
+            self.hcontext, str(self.reader), mode, pcscprotocol
+        )
+        if hresult != SCARD_S_SUCCESS:
+            self.hcard = None
+            if hresult in (SCARD_W_REMOVED_CARD, SCARD_E_NO_SMARTCARD):
+>               raise NoCardException("Unable to connect", hresult=hresult)
+E               smartcard.Exceptions.NoCardException: Unable to connect: No smart card inserted. (0x8010000C)
+
+/usr/local/lib/python3.12/dist-packages/smartcard/pcsc/PCSCCardConnection.py:167: NoCardException
+---------------------------- Captured stdout setup -----------------------------
+[field] granted -> acr (owner=acr acr_in_pcscd=True nucula_in_pcscd=False)
+=========================== short test summary info ============================
+FAILED suites/test_t2_tap_read.py::test_numo_request[ACR1252] - smartcard.Exc...
+======== 1 failed, 1 passed, 3 deselected, 2 rerun in 279.53s (0:04:39) ========
+DONE

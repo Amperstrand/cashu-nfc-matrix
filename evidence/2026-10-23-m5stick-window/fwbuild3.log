@@ -1,0 +1,113 @@
+[0;32m[INFO][0m board=c3-ccid target=riscv32imc-esp-espidf profile=debug chip=esp32c3
+[0;32m[INFO][0m CARGO_TARGET_DIR=/root/.cargo-target
+[1;33m[WARN][0m NUCULA_WIFI_SSID: unset — credential-baking crates will compile without it
+[0;32m[INFO][0m OTA_TOKEN: unset — OTA1 (unauthenticated) push protocol
++ cd /root/src/ccid-firmware-rs/firmware/esp32-ccid
++ . /root/export-esp.sh
++ env RUSTUP_TOOLCHAIN=esp ESP_IDF_SDKCONFIG=/root/src/ccid-firmware-rs/firmware/esp32-ccid/sdkconfig.full cargo build --target riscv32imc-esp-espidf --no-default-features --features pn7160-ccid
+   Compiling rustc-std-workspace-alloc v1.99.0 (/root/.rustup/toolchains/esp/lib/rustlib/src/rust/library/rustc-std-workspace-alloc)
+   Compiling panic_unwind v0.0.0 (/root/.rustup/toolchains/esp/lib/rustlib/src/rust/library/panic_unwind)
+   Compiling esp-idf-sys v0.38.1
+   Compiling gimli v0.32.3
+   Compiling hashbrown v0.17.1
+   Compiling std_detect v0.1.5 (/root/.rustup/toolchains/esp/lib/rustlib/src/rust/library/std_detect)
+   Compiling miniz_oxide v0.8.9
+   Compiling object v0.37.3
+   Compiling addr2line v0.25.1
+   Compiling std v0.0.0 (/root/.rustup/toolchains/esp/lib/rustlib/src/rust/library/std)
+   Compiling proc_macro v0.0.0 (/root/.rustup/toolchains/esp/lib/rustlib/src/rust/library/proc_macro)
+   Compiling byteorder v1.5.0
+   Compiling nb v1.1.0
+   Compiling stable_deref_trait v1.2.1
+   Compiling embedded-io v0.7.1
+   Compiling konst_macro_rules v0.2.19
+   Compiling embedded-hal v1.0.0
+   Compiling futures-sink v0.3.32
+   Compiling cfg-if v1.0.4
+   Compiling enumset v1.1.10
+   Compiling futures-core v0.3.32
+   Compiling log v0.4.29
+   Compiling nb v0.1.3
+   Compiling libc v0.2.186
+   Compiling critical-section v1.2.0
+   Compiling void v1.0.2
+   Compiling compile-fmt v0.1.0
+   Compiling konst v0.2.20
+   Compiling embedded-io-async v0.7.0
+   Compiling embedded-hal-nb v1.0.0
+   Compiling hash32 v0.3.1
+   Compiling embedded-hal-async v1.0.0
+   Compiling embedded-hal v0.2.7
+   Compiling embedded-can v0.4.1
+   Compiling serde_core v1.0.228
+   Compiling heapless v0.9.2
+   Compiling atomic-waker v1.1.2
+   Compiling ccid-protocol v0.1.0 (/root/src/ccid-firmware-rs/crates/ccid-protocol)
+   Compiling uncased v0.9.10
+   Compiling embassy-futures v0.1.2
+   Compiling futures-io v0.3.32
+   Compiling const_format v0.2.36
+   Compiling num_enum v0.7.6
+   Compiling card-interface v0.1.0 (/root/src/ccid-firmware-rs/crates/card-interface)
+   Compiling ccid-core v0.1.0 (/root/src/ccid-firmware-rs/crates/ccid-core)
+   Compiling embassy-sync v0.8.0
+   Compiling ccid-transport-serial v0.1.0 (/root/src/ccid-firmware-rs/crates/ccid-transport-serial)
+   Compiling serde v1.0.228
+   Compiling embedded-svc v0.29.0
+   Compiling esp-idf-hal v0.47.0
+   Compiling esp-idf-svc v0.53.0
+   Compiling esp32-ccid v0.1.0 (/root/src/ccid-firmware-rs/firmware/esp32-ccid)
+   Compiling pn7160-nci v0.1.0 (/root/src/ccid-firmware-rs/crates/pn7160-nci)
+warning: constant `UART_RX_TIMEOUT_MS` is never used
+   --> firmware/esp32-ccid/src/main.rs:140:7
+    |
+140 | const UART_RX_TIMEOUT_MS: u64 = 500;
+    |       ^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: constant `CARD_POLL_INTERVAL_MS` is never used
+   --> firmware/esp32-ccid/src/main.rs:142:7
+    |
+142 | const CARD_POLL_INTERVAL_MS: u64 = 3000;
+    |       ^^^^^^^^^^^^^^^^^^^^^
+
+warning: constant `UART_BUF_SIZE` is never used
+   --> firmware/esp32-ccid/src/main.rs:151:7
+    |
+151 | const UART_BUF_SIZE: usize = 4096;
+    |       ^^^^^^^^^^^^^
+
+warning: constant `IO_MUX_BASE` is never used
+   --> firmware/esp32-ccid/src/main.rs:830:11
+    |
+830 |     const IO_MUX_BASE: *mut u32 = 0x60009000 as *mut u32;
+    |           ^^^^^^^^^^^
+
+warning: function `mux` is never used
+   --> firmware/esp32-ccid/src/main.rs:832:8
+    |
+832 |     fn mux(pin: usize) -> u32 {
+    |        ^^^
+
+warning: function `to_input` is never used
+   --> firmware/esp32-ccid/src/main.rs:836:8
+    |
+836 |     fn to_input(pin: i32) {
+    |        ^^^^^^^^
+
+warning: function `run` is never used
+   --> firmware/esp32-ccid/src/main.rs:845:12
+    |
+845 |     pub fn run() -> ! {
+    |            ^^^
+
+warning: `esp32-ccid` (bin "esp32-ccid") generated 7 warnings
+    Finished `dev` profile [optimized + debuginfo] target(s) in 51.13s
++ esptool --chip esp32c3 elf2image --flash-mode dio -o /root/.cargo-target/esp32-ccid-c3-ccid.bin /root/.cargo-target/riscv32imc-esp-espidf/debug/esp32-ccid
+esptool v5.3.1
+Creating ESP32-C3 image...
+Merged 2 ELF sections.
+Successfully created ESP32-C3 image.
+[0;32m[INFO][0m done: /root/.cargo-target/esp32-ccid-c3-ccid.bin
+BUILD_RC=0

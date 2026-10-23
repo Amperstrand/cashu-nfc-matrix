@@ -1,2 +1,2 @@
-{"cycle": 0, "ts": "09:26:38", "mint_s": 2.2, "ok": false, "error": "CardConnectionException('Failed to transmit with protocol T1. RPC transport error.')", "recovered": true, "cycle_s": 141.7}
-{"cycle": 1, "ts": "09:29:00", "mint_s": 2.0, "ok": false, "error": "CardConnectionException('Unable to connect with protocol: T0 or T1. Unknown reader specified.')", "recovered": true, "cycle_s": 117.2}
+{"cycle": 0, "ts": "09:26:38", "mint_s": 2.2, "ok": false, "error": "CardConnectionException('Failed to transmit with protocol T1. RPC transport error.')", "recovered": true, "cycle_s": 141.7, "reader": "Nucula CCID", "wallet": "cashu_me"}
+{"cycle": 1, "ts": "09:29:00", "mint_s": 2.0, "ok": false, "error": "CardConnectionException('Unable to connect with protocol: T0 or T1. Unknown reader specified.')", "recovered": true, "cycle_s": 117.2, "reader": "Nucula CCID", "wallet": "cashu_me"}

@@ -1,0 +1,20 @@
+[field] granted -> nucula (owner=nucula acr_in_pcscd=True nucula_in_pcscd=True)
+start balance=0 reader=Nucula CCID cycles=6
+{"cycle": 0, "ts": "16:13:57", "mint_s": 2.5, "ok": false, "error": "ValueError(\"unsupported record tnf=1 type=b'U'\")", "recovered": true, "cycle_s": 117.8}
+{"cycle": 1, "ts": "16:15:54", "mint_s": 2.2, "ok": false, "error": "ValueError(\"unsupported record tnf=1 type=b'U'\")", "recovered": true, "cycle_s": 117.7}
+{"cycle": 2, "ts": "16:17:52", "mint_s": 2.2, "ok": false, "error": "RuntimeError(\"reader matching 'Nucula CCID' not present in pcscd after 20s: ['ACS ACR1252 Dual Reader [ACR1252 Dual Reader PICC] 01 00', 'ACS ACR1252 Dual Reader [ACR1252 Dual Reader SAM] 02 00', 'M5s", "recovered": "RuntimeError(\"adb ('shell', 'uiautomator', 'dump', '/sdcard/ui.xml') failed: rc=137: \")", "cycle_s": 138.4}
+{"cycle": 3, "ts": "16:20:10", "mint_s": 2.4, "ok": false, "error": "DriverError('cannot find wallet home; focus=Window{44d4522 u0 com.cashu.me/com.cashu.me.App.MainActivity}')", "recovered": "RuntimeError(\"adb ('shell', 'uiautomator', 'dump', '/sdcard/ui.xml') failed: rc=137: \")", "cycle_s": 116.3}
+{"cycle": 4, "ts": "16:22:07", "mint_s": 2.2, "ok": false, "error": "RuntimeError(\"adb ('shell', 'uiautomator', 'dump', '/sdcard/ui.xml') failed: rc=137: \")", "recovered": "TimeoutError(\"wait_for(text='Tap to reveal', rid=None, contains=None) failed; last error: adb ('shell', 'uiautomator', '", "cycle_s": 29.3}
+{"cycle": 5, "ts": "16:22:36", "mint_s": 1.9, "ok": false, "error": "RuntimeError(\"adb ('shell', 'uiautomator', 'dump', '/sdcard/ui.xml') failed: rc=137: \")", "recovered": "RuntimeError(\"adb ('shell', 'uiautomator', 'dump', '/sdcard/ui.xml') failed: rc=137: \")", "cycle_s": 23.9}
+[field] granted -> quiet (owner=quiet acr_in_pcscd=True nucula_in_pcscd=False)
+=== soak done: 0 ok / 6 fail -> results/payment-soak-20261023-161352.jsonl
+Exception ignored in: <function PCSCCardConnection.__del__ at 0x7892a9332de0>
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/smartcard/pcsc/PCSCCardConnection.py", line 121, in __del__
+    self.release()
+  File "/usr/local/lib/python3.12/dist-packages/smartcard/pcsc/PCSCCardConnection.py", line 127, in release
+    self.disconnect()
+  File "/usr/local/lib/python3.12/dist-packages/smartcard/pcsc/PCSCCardConnection.py", line 260, in disconnect
+    raise CardConnectionException(
+smartcard.Exceptions.CardConnectionException: Failed to disconnect: Service not available.: Service not available. (0x8010001D)
+SOAK_DONE

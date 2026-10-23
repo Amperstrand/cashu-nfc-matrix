@@ -251,3 +251,22 @@
   total. Curve: 400 -> 210 -> 40ms. Natural peer response ~25-35ms (matches
   m5stick 34ms). PR #445 comment posted — verification COMPLETE host-side;
   0xD2 word-8 cross-check = optional next-CCID-window follow-up.
+
+## 2026-10-23 ~19:4x — OWNER-DIRECTED TOP-3 REFACTORS (code-only, no hw)
+
+1. GEOMETRY-AWARE CELLS: bench/geometry.py — phone position declared via
+   PHONE_AT env or bench/phone-at file (never detected); T5 + T2 reader
+   params now skip cells whose geometry is not live, with the reason.
+   'unknown' (default) = legacy all-run. CI dispatches set PHONE_AT.
+2. HARDENED EXCHANGE WRAPPER: bench/exchange.py — single home for
+   warm-up-6400 retry, enumeration wait, stale-reader cache reset + heal.
+   payer.py connect() documented as shim; full delegation deferred to the
+   next hardware window (no blind refactor of live RF paths).
+3. FILM-FIRST + RENDERED MATRIX: bench/render_matrix.py generates
+   results/MATRIX.md + README <!-- matrix:begin --> block from
+   results/*.jsonl (soak records now stamped reader+wallet; legacy files
+   backfilled). Unit-tested in suites/test_render_matrix.py (plain pytest).
+- EVIDENCE BANKED: evidence/2026-10-23-m5stick-window/ (11 files: m5 soaks,
+  T5/T2 runs, fwbuild/fwflash logs) — /tmp/opencode/wallet-matrix is now
+  disposable for the ccid-tooling migration/prune.
+- Plain pytest: 16 skipped (hil-gated) + 2 render/geometry tests pass.

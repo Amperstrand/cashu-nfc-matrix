@@ -1,5 +1,5 @@
-{"cycle": 0, "ts": "16:46:33", "mint_s": 2.2, "nfc_s": 2.3, "chunks": 53, "credited": 20, "ok": true, "cycle_s": 60.2}
-{"cycle": 1, "ts": "16:47:34", "mint_s": 2.3, "nfc_s": 2.2, "chunks": 53, "credited": 20, "ok": true, "cycle_s": 60.3}
-{"cycle": 2, "ts": "16:48:34", "mint_s": 2.1, "nfc_s": 2.3, "chunks": 53, "credited": 20, "ok": true, "cycle_s": 60.7}
-{"cycle": 3, "ts": "16:49:35", "mint_s": 2.2, "nfc_s": 2.2, "chunks": 53, "credited": 20, "ok": true, "cycle_s": 60.2}
-{"cycle": 4, "ts": "16:50:35", "mint_s": 2.3, "nfc_s": 2.2, "chunks": 53, "credited": 20, "ok": true, "cycle_s": 60.6}
+{"cycle": 0, "ts": "16:46:33", "mint_s": 2.2, "nfc_s": 2.3, "chunks": 53, "credited": 20, "ok": true, "cycle_s": 60.2, "reader": "M5stick GemPC", "wallet": "cashu_me"}
+{"cycle": 1, "ts": "16:47:34", "mint_s": 2.3, "nfc_s": 2.2, "chunks": 53, "credited": 20, "ok": true, "cycle_s": 60.3, "reader": "M5stick GemPC", "wallet": "cashu_me"}
+{"cycle": 2, "ts": "16:48:34", "mint_s": 2.1, "nfc_s": 2.3, "chunks": 53, "credited": 20, "ok": true, "cycle_s": 60.7, "reader": "M5stick GemPC", "wallet": "cashu_me"}
+{"cycle": 3, "ts": "16:49:35", "mint_s": 2.2, "nfc_s": 2.2, "chunks": 53, "credited": 20, "ok": true, "cycle_s": 60.2, "reader": "M5stick GemPC", "wallet": "cashu_me"}
+{"cycle": 4, "ts": "16:50:35", "mint_s": 2.3, "nfc_s": 2.2, "chunks": 53, "credited": 20, "ok": true, "cycle_s": 60.6, "reader": "M5stick GemPC", "wallet": "cashu_me"}

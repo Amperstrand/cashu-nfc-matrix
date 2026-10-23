@@ -47,9 +47,10 @@ class Type4Payer:
     # -- connection --
 
     def connect(self, tries: int = 3) -> str:
-        """Connect, tolerating the first-activation warm-up: the PN7160 path
-        on fresh c3-ccid firmware can fail the FIRST exchange after idle
-        (SW=6400); a brand-new connection then works. Bench-verified."""
+        """Connect via the hardened exchange wrapper (bench/exchange.py —
+        the single home of the warm-up/retry/heal knowledge). Kept as a
+        thin compatibility shim over Exchange; new code should use
+        Exchange directly."""
         from smartcard.Exceptions import CardConnectionException, NoCardException
 
         last: Exception = RuntimeError("no connect attempt")

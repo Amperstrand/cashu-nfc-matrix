@@ -1,0 +1,6 @@
+{
+  "phone": {"serial": "RF8NB01ZYAH", "adb_state": "device", "wifi_ip": "192.168.13.152"},
+  "pcscd": {"readers": ["ACS ACR1252 Dual Reader PICC 01 00"]},
+  "labgrid": {"places_held": {"phone-s20": "root@ai-legion", "m5stick": "ubuntu@ai-legion"}},
+  "boards": {"nucula_c3": {"fwid": "bolty", "fwid_source": "broker-journal"}}
+}

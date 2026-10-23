@@ -152,3 +152,17 @@
   lanes for one sweeper pass with phases enabled.
 - PR #4 landed (squash) unless merge failed — see report. Queue unchanged:
   wipe/add_mint parametrization + T5 on local mint (192.168.13.208:3338).
+
+## 2026-10-23 08:5x — PERF ANALYSIS COMPLETE (ccid-firmware-rs#408)
+
+- 0xD2 turnaround split measured live (raw-serial probe, broker parked, phone
+  armed): SELECT x6 = 400.4ms host RTT; serve turnaround 0.000ms, card exchange
+  399.2ms -> ALL 400ms is inside pn7160 exchange; serve path + pcscd + broker
+  contribute nothing. GSS x6 = 1.1ms (protocol+wire fine).
+- Anomaly for fix lane: 0xD2 words 4-8 (blocks/wtx/recoveries) read ZERO while
+  card=399ms — decomposition instrumentation not populating on this path.
+- Commented on #408 (issuecomment-6358399783). Perf item CLOSED from matrix
+  side; fix + verification now fully owned by the ccid-firmware-rs perf lane.
+- Perf verdict one-liner: constant 400ms/APDU = 2x200ms NCI collect rounds +
+  credit gate in exchange(); fix = harvest-before-sleep, expected effect
+  ~26x on writes (21s -> <2s for a 2.7KB token).

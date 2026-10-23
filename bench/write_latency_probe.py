@@ -23,7 +23,7 @@ def main() -> None:
         if a.startswith("reader-substr="):
             sub = a.split("=", 1)[1]
     file = text_type4_file(token)
-    grant({"Nucula": "nucula", "ACR": "acr"}.get(sub.split()[0], "m5stick"))
+    grant("nucula" if sub.startswith("Nucula") else "acr" if sub.startswith("ACR") else "m5stick")
     r = [x for x in readers() if sub in str(x)][0]
     c = r.createConnection()
     c.connect()

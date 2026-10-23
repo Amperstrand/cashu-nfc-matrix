@@ -54,7 +54,7 @@ def _hce_exclusive() -> None:
 def main() -> int:
     d = CashuMeDriver()
     _hce_exclusive()
-    grant({"Nucula": "nucula", "ACR": "acr"}.get(READER.split()[0], "m5stick"))
+    grant("nucula" if READER.startswith("Nucula") else "acr" if READER.startswith("ACR") else "m5stick")
     out_path = f"results/payment-soak-{time.strftime('%Y%m%d-%H%M%S')}.jsonl"
     os.makedirs("results", exist_ok=True)
     ok = fail = 0

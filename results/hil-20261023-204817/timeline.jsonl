@@ -1,0 +1,3 @@
+{"t": 0.0, "wall": "20:48:17", "kind": "run", "text": "start"}
+{"t": 0.0, "wall": "20:48:17", "kind": "follower", "text": "started wire-broker.log"}
+{"t": 0.0, "wall": "20:48:17", "kind": "follower", "text": "started phone-logcat.log"}

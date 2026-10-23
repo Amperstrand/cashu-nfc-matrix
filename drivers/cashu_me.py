@@ -266,6 +266,10 @@ class CashuMeDriver:
     def ensure_ready(self) -> None:
         """Idempotent any-state -> usable wallet (onboarding, mint, Nostr
         heal). WalletOps interface (drivers/base.py)."""
+        # post-reboot: app not foreground (launcher) reads as 'unknown'
+        ui.launch_app(self.serial, self.package)
+        import time as _t
+        _t.sleep(3)
         self.ensure_onboarded(prefer_mint="https://testnut.cashu.space")
         txt = ui.screen_text(self.serial)
         if "Testnut" not in txt:

@@ -46,8 +46,8 @@ def bench_places(request):
 
     if not request.config.getoption("--hil"):
         pytest.skip("hardware gated: pass --hil on the bench runner")
-    held = acquire_places(["phone-s20", "nucula-c3", "ref-acr1252"],
-                          why="T5 dual-reader payment")
+    held = acquire_places(["phone-s20", "nucula-c3", "ref-acr1252", "m5stick"],
+                          why="T5 tri-reader payment (m5stick seat added 10-23)")
     yield held
     grant("quiet")
     release_places(held)

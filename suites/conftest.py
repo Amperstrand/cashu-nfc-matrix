@@ -81,6 +81,7 @@ def acquire_places(names: list[str], why: str, timeout_s: float = 120.0):
     """Acquire labgrid places flock-first. Returns holder list or skips loudly
     when the bench is busy with another lane."""
     held = []
+    held_self = []
     deadline = time.monotonic() + timeout_s
     with BenchLock():
         for name in names:
@@ -92,6 +93,14 @@ def acquire_places(names: list[str], why: str, timeout_s: float = 120.0):
                     held.append(name)
                     break
                 busy = "currently acquired" in (r.stdout + r.stderr)
+                if busy:
+                    # held by OUR OWN lane (parent/root holds for this
+                    # session) = fine: treat as present, do not re-acquire,
+                    # do not release at teardown
+                    show = sh(LABGRID + ["-p", name, "show"], timeout=30).stdout
+                    if "ai-legion/root" in show:
+                        held_self.append(name)
+                        break
                 if not busy or time.monotonic() > deadline:
                     for h in held:
                         sh(LABGRID + ["-p", h, "release"])

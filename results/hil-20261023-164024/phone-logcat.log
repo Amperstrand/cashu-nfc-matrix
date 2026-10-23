@@ -1,0 +1,7 @@
+--------- beginning of main
+10-23 16:28:41.702 D/NfcService( 1971): MSG_APPLY_SCREEN_STATE 8
+10-23 16:28:41.702 D/NfcService( 1971): call the applyRouting
+10-23 16:28:41.788 D/NfcService( 1971): doSetScreenState - MSG_APPLY_SCREEN_STATE
+10-23 16:28:42.588 D/NfcService( 1971): Feature update as broadcast action: com.samsung.carrier.action.CARRIER_CHANGED
+10-23 16:28:42.588 D/NfcService( 1971): extraCarrierState : LOADED
+10-23 16:33:45.778 D/NfcService( 1971): Current File Index : 2

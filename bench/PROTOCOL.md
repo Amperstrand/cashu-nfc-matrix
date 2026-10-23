@@ -103,3 +103,20 @@ the NDEF Type-4 file image (2-byte NLEN prefix + single NDEF record):
    activated the phone (reader blind); a fresh build from ccid-firmware-rs
    main (8c8a8337, c3-ccid preset) coupled instantly. If the nucula reader
    goes blind again: reflash first, debug second.
+
+
+## m5stick/MFRC522 reader (2026-10-23)
+
+- Same GemPC-twin serial contract as the nucula broker (115200, reader.conf
+  entry /etc/reader.conf.d/m5stick-gempc). Phone HCE behaves identically:
+  ATR 3b 80 81 31 fe 45 8b, CC byte-identical to ACR/nucula reads.
+- Per-APDU latency: **34ms median** (write_latency_probe) vs ACR ~15ms /
+  nucula 400ms — same ccid-firmware-rs skeleton, so the delta isolates the
+  pn7160-nci exchange path (ccid-firmware-rs#408).
+- First-exchange SW=6400 warm-up quirk ALSO present via m5stick (reader-
+  independent: it is the phone HCE stack, not the PN7160).
+- Recovery lesson: 'stick in console mode' was misdiagnosis — the serial
+  port was contended (foreign holder + pcscd). GemPCTwin init failing in
+  pcscd journal = check `fuser` FIRST, pcscd restart second.
+- boltcard-hce (UI-less HCE service): SELECT AID answered 6400 then silent
+  when its service is not armed — do not treat as reader failure.

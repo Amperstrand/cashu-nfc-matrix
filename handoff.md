@@ -132,3 +132,23 @@
   drivers/cashu_me.py (mint-picker ADD at x~924); parametrize wipe/add_mint
   with MINT_URL default http://192.168.13.208:3338, then T5/soak run
   fully bench-local. Procedure proven at CLI level (RECEIVED=21, 0.21s).
+
+## 2026-10-23 ~04:40 — RED CI TRIAGED: DISK FULL (owner decision needed)
+
+- Runs 39886689060 (scheduled, main) + 39852224171: runner EXECUTED the suite
+  (01:55 job ran 11 min) but died uploading — / is 100% (685 MB free of 937G).
+  NOT the ACR (USB dev 030 present, pcscd-healthy; no wedge).
+- Safe cleanups already done in my domain: scratch logs/probe dirs removed;
+  docker image prune (sweeper-sanctioned, dangling) reclaimed 0B.
+- NOT mine to delete (owner decision list, ranked):
+    /home/ubuntu            287G  (lane data: src 79G, avd-goldens 19G,
+                                   .bitcoin 12G, tollgate-virtual-lab 13G...)
+    /root/src/worktrees     74G   (release-verify worktrees + their target/)
+    /root/.cargo-target     48G   (SHARED live build cache — deleting breaks
+                                   phone-hil/other live builds mid-flight)
+    /root/src/ccid-firmware-rs 17G (repo + targets; sweeper phase-aware)
+- Until / has multi-GB free: CI will keep failing uploads; suites writing
+  evidence dirs may also fail. RECOMMEND: owner-gated deep sweep or pausing
+  lanes for one sweeper pass with phases enabled.
+- PR #4 landed (squash) unless merge failed — see report. Queue unchanged:
+  wipe/add_mint parametrization + T5 on local mint (192.168.13.208:3338).

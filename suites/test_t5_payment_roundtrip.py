@@ -98,7 +98,7 @@ def test_nfc_payment_round_trip(bench_places, reader, request, evidence_dir, rec
     rec.still("armed-request")
 
     # ---- field arbitration: exactly one reader live for this phase ----
-    grant({"Nucula": "nucula", "ACR": "acr", "M5stick": "m5stick"}[reader.split()[0] if reader.split()[0] in ("Nucula", "ACR") else "M5stick"])
+    grant("nucula" if reader.startswith("Nucula") else "acr" if reader.startswith("ACR") else "m5stick")
 
     rec.event("nfc", f"field granted; payer connecting via {reader}")
     payer = Type4Payer(reader)

@@ -24,6 +24,7 @@ from bench.payer import Type4Payer  # noqa: E402
 from drivers import ui  # noqa: E402
 from drivers.cashu_me import CashuMeDriver  # noqa: E402
 
+SERIAL = "RF8NB01ZYAH"
 READER = os.environ.get("SOAK_READER", "Nucula CCID")
 CYCLES = int(os.environ.get("SOAK_CYCLES", "10"))
 AMOUNT = int(os.environ.get("SOAK_AMOUNT", "21"))
@@ -37,8 +38,22 @@ def mint(tok_path: str) -> None:
         raise RuntimeError(f"mint failed: {r.stdout[-150:]}")
 
 
+def _hce_exclusive() -> None:
+    """Matrix precondition: exactly ONE HCE app enabled (cashu.me). Other
+    lanes re-enable boltcard HCEs (dev.boltcard.hce, com.amperstrand...)
+    and AID routing silently hijacks NDEF SELECTs -> URI records instead
+    of creqA (observed 2026-10-23). Fix + record, never run blind."""
+    out = ui.adb(SERIAL, "shell", "dumpsys", "nfc")
+    hostile = [p for p in ("com.amperstrand.boltcard.hce", "dev.boltcard.hce")
+               if f"{p}/" in out]
+    for p in hostile:
+        ui.adb(SERIAL, "shell", "pm", "disable-user", "--user", "0", p)
+        print(f"[hce] disabled {p} (was claiming host routing)", flush=True)
+
+
 def main() -> int:
     d = CashuMeDriver()
+    _hce_exclusive()
     grant("nucula" if "Nucula" in READER else "acr")
     out_path = f"results/payment-soak-{time.strftime('%Y%m%d-%H%M%S')}.jsonl"
     os.makedirs("results", exist_ok=True)

@@ -1,1 +1,4 @@
 {"cycle": 0, "ts": "09:32:51", "mint_s": 2.2, "ok": false, "error": "CardConnectionException('Failed to transmit with protocol T1. RPC transport error.')", "recovered": true, "cycle_s": 140.7}
+{"cycle": 1, "ts": "09:35:12", "mint_s": 1.6, "ok": false, "error": "EstablishContextException('Failed to establish context')", "recovered": true, "cycle_s": 112.1}
+{"cycle": 2, "ts": "09:37:04", "mint_s": 1.7, "ok": false, "error": "EstablishContextException('Failed to establish context')", "recovered": true, "cycle_s": 112.6}
+{"cycle": 3, "ts": "09:38:56", "mint_s": 2.0, "ok": false, "error": "EstablishContextException('Failed to establish context')", "recovered": true, "cycle_s": 112.8}

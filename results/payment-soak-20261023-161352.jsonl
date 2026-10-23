@@ -1,0 +1,2 @@
+{"cycle": 0, "ts": "16:13:57", "mint_s": 2.5, "ok": false, "error": "ValueError(\"unsupported record tnf=1 type=b'U'\")", "recovered": true, "cycle_s": 117.8}
+{"cycle": 1, "ts": "16:15:54", "mint_s": 2.2, "ok": false, "error": "ValueError(\"unsupported record tnf=1 type=b'U'\")", "recovered": true, "cycle_s": 117.7}

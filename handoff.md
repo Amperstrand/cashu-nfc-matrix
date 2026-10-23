@@ -352,3 +352,16 @@
   max-age; white=no budget; orange=never proven) + result red/green —
   README table now self-describing.
 - 11 plain tests green. ACR replug still pending (thread resumes on 'done').
+
+## 2026-10-24 ~02:0x — ACR post-replug: USB alive, RF still dead
+
+- Replug executed (~01:5x): dmesg shows re-auth + reset; USB config OK;
+  pcscd lists both ACR slots after a settle-then-restart (pcscd-ctl
+  retries raced the device init — a plain restart after settle bound it).
+- Armed phone (verified unlocked+foregrounded) on reader: STILL NoCard
+  after 2 min live polling. USB/contact side healthy; RF field dead.
+- FINAL DISCRIMINATOR (owner, 30s): any physical contactless card (bank
+  card / boltcard) flat on the ACR while we poll. Card detected = RF
+  alive and the phone's HCE radio is the suspect (then: phone reboot or
+  NFC toggle). Still NoCard = ACR RF stage dead for good -> reader
+  retirement / RMA; ACR matrix cells park as hardware-gated.

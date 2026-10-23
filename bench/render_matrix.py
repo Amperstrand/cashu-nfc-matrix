@@ -72,11 +72,13 @@ def render(cells: dict[tuple[str, str], dict]) -> str:
         for r in readers:
             c = cells.get((w, r))
             if not c:
-                row.append("—")
-            elif c["fail"] == 0:
-                row.append(f"**{c['ok']} ok** ({c['evidence'][0]})")
-            else:
-                row.append(f"{c['ok']} ok / {c['fail']} fail ({c['evidence'][0]})")
+                row.append(f"\u26AA — {_staleness_mark_for(w, r)}")
+                continue
+            mark = "\U0001F7E2" if c["fail"] == 0 else "\U0001F534"
+            age_mark = _staleness_mark_for(w, r)
+            base = (f"{c['ok']} ok" if c["fail"] == 0
+                    else f"{c['ok']} ok / {c['fail']} fail")
+            row.append(f"{mark} {base} {age_mark} ({c['evidence'][0]})")
         lines.append("| " + " | ".join(row) + " |")
     lines.append("")
     return "\n".join(lines)
@@ -94,6 +96,37 @@ def refresh_readme(md: str) -> None:
     else:
         t += "\n\n" + block + "\n"
     README.write_text(t)
+
+
+def _staleness_mark_for(wallet: str, reader: str) -> str:
+    """Age emoji from registry max-age vs newest matching evidence file."""
+    try:
+        import time as _t
+        import yaml
+        reg = yaml.safe_load(
+            (REPO / "matrixctl" / "registry.yaml").read_text())["cells"]
+    except Exception:
+        return ""
+    reader_key = {"nucula/PN7160": "nucula", "ACR1252": "acr",
+                  "m5stick/MFRC522": "m5stick"}.get(reader, "")
+    ma = None
+    for name, c in reg.items():
+        if reader_key and reader_key in name:
+            ma = c.get("max_age_d")
+    if ma is None:
+        return "\u26AA"  # white: no budget (opportunistic)
+    newest = 0.0
+    for f in RESULTS.glob("payment-soak-*.jsonl"):
+        import re as _re
+        m = _re.match(r"payment-soak-(\d{8}-\d{6})\.jsonl", f.name)
+        if m:
+            newest = max(newest, _t.mktime(
+                _t.strptime(m.group(1), "%Y%m%d-%H%M%S")))
+    if not newest:
+        return "\U0001F7E0"  # orange: never proven
+    age_d = (_t.time() - newest) / 86400.0
+    return ("\U0001F534" if age_d > ma
+            else "\U0001F7E1" if age_d > ma / 2 else "\U0001F7E2")
 
 
 def _staleness_mark(cell_hint: str) -> str:

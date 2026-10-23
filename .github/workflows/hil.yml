@@ -48,12 +48,20 @@ jobs:
           cat hil-places.txt
           exit 0
 
-      - name: run matrix suites (smoke/full)
-        if: inputs.stage != 'soak' && inputs.stage != 'payment'
-        run: >
+      - name: tier-driven run (smoke=core, full=core+extended) via matrixctl
+        if: inputs.stage == 'smoke' || inputs.stage == 'full'
+        run: |
+          TIER=core
+          [ "${{ inputs.stage }}" = "full" ] && TIER=all
+          /usr/bin/python3 -m matrixctl plan --tier "$TIER" --out /tmp/plan.json
+          /usr/bin/python3 -m matrixctl run /tmp/plan.json --dry-run
+          # suites stay the executor for now: cells map onto pytest marks;
+          # geometry gating skips cells whose bench facts say no.
+          MARK="not soak and not payer"
+          [ "$TIER" = "core" ] && MARK="not soak and not payer and not extended"
           /usr/bin/python3 -m pytest suites/ -v --hil
-          --junitxml=hil-junit.xml --timeout=900 --timeout-method=signal
-          -m "not soak and not payer"
+            --junitxml=hil-junit.xml --timeout=900 --timeout-method=signal
+            -m "$MARK"
 
       - name: matrixctl survey + next (bench-state as CI input)
         run: |

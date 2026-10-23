@@ -23,5 +23,22 @@ spacer (phone > nucula > ACR worked historically).
 ## off-bench
 Phone away from all reader fields (idle/on charger).
 
+## Measured placement laws (bench-verified 2026-10-22/23)
+
+- **Phone goes FACE-DOWN** (screen toward the reader surface): the S20's
+  NFC coil lives in the back panel, center-upper. Face-up coupling is
+  marginal-to-nil on every reader tested.
+- **Nothing between phone and reader antenna** except the designated
+  spacer: the c3 board (thin, open) couples fine as a stack layer
+  (phone > nucula > ACR worked); the m5stick BODY kills coupling stone
+  dead (PCB/battery shields 13.56 MHz) — the stick sits BESIDE the
+  antenna, never between.
+- **Coil-to-coil centering** matters more than contact: a 2-3 cm offset
+  off the antenna center is enough to lose an HCE peer on the ACR.
+- [ ] photo: phone face-down on nucula coil
+- [ ] photo: phone face-down on ACR1252, stick beside
+- [ ] photo: phone on m5stick coil
+- [ ] photo: off-bench resting position
+
 Positions are SET by `matrixctl set phone.at <value>` and VERIFIED by
 `matrixctl verify-state` mid-run. Drift = loud fail, never mystery red.

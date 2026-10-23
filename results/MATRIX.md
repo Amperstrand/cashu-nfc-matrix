@@ -5,4 +5,4 @@ every cell cites its evidence file(s).
 
 | wallet | ACR1252 | m5stick/MFRC522 | nucula/PN7160 |
 |---|---|---|---|
-| cashu_me | — | 12 ok / 3 fail (payment-soak-20261023-164625.jsonl) | 14 ok / 16 fail (payment-soak-20261022-124818.jsonl) |
+| cashu_me | ⚪ — ⚪ | 🔴 12 ok / 3 fail ⚪ (payment-soak-20261023-164625.jsonl) | 🔴 14 ok / 16 fail 🟢 (payment-soak-20261022-124818.jsonl) |

@@ -100,6 +100,7 @@ def _reader_params():
     return out
 
 
+@pytest.mark.extended
 @pytest.mark.parametrize("reader", _reader_params())
 def test_numo_request(phone_place, acr_place, evidence_dir, reader):
     """Numo v1.9 PoS: Charge screen arms HCE; request is BIP21+CREQ or

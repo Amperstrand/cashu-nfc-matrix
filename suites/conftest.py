@@ -47,6 +47,11 @@ def pytest_addoption(parser):
                      help="cashuA/B token string for the payer write test")
 
 
+def pytest_configure(config):
+    config.addinivalue_line(
+        "markers", "extended: extended-tier cell (weekly / on-reflash)")
+
+
 def _need_hil(request) -> None:
     if not request.config.getoption("--hil"):
         pytest.skip("hardware gated: pass --hil on the bench runner")

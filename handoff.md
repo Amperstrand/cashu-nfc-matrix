@@ -118,3 +118,17 @@
   red herring; the adapter's keyset id IS correct CDK-v1 form).
 - Next: switch T5/soak default to MINT_URL=http://<lan-ip>:3338 + phone add_mint
   (add_mint flow already in driver); then CI payments stop depending on testnut.
+
+## 2026-10-23 checkpoint 2 — PR #4 open; mint switch mapped; ACR healthy
+
+- PR #4 (hil-suites -> main) opened with full evidence body.
+- Local mint reachable from PHONE subnet: host = 192.168.13.208, service on
+  0.0.0.0:3338 -> phone add_mint target = http://192.168.13.208:3338.
+- ACR wedge report (micronuts #132 work): checked 01:3x — USB present
+  (072f:223b dev 030) AND enumerates in pcscd; no wedge visible now
+  (replug may have happened or it self-recovered). T5[ACR] still gated on
+  phone placement, not reader health.
+- NEXT (T5 local-mint switch): wipe() currently hardcodes testnut in
+  drivers/cashu_me.py (mint-picker ADD at x~924); parametrize wipe/add_mint
+  with MINT_URL default http://192.168.13.208:3338, then T5/soak run
+  fully bench-local. Procedure proven at CLI level (RECEIVED=21, 0.21s).

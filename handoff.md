@@ -181,3 +181,17 @@
 - m5stick: foreign python3 holder GONE, but GemPC init still fails after
   pcscd restart — stick remains in console mode; needs its lane's reader-mode
   switch or a replug. Reader not enumerable until then.
+
+## 2026-10-23 16:30-17:3x — M5STICK WINDOW (owner-directed, 3-5h unattended)
+
+- Reader recovered: port contention (foreign python3 + pcscd both on ttyUSB0,
+  re-enumerated from ttyUSB3) — sole-ownership pcscd restart -> 'M5stick GemPC'
+  back. NOT console mode. ccid-tooling lane steered to hold until 19:30.
+- FIRST MFRC522<->HCE read GREEN (creqA via m5stick, 0.09s).
+- T5[M5stick GemPC] PASSED (2:19) — first full payment via MFRC522; faster
+  than nucula (3:09). Place list now includes m5stick (4 seats).
+- PERF: m5stick 34.0ms/chunk median vs nucula 400ms / ACR ~15ms — same
+  firmware skeleton, different driver -> isolates pn7160-nci (#408 comment).
+- Fixes: driver launch-from-launcher; conftest self-hold acceptance
+  ('already acquired' + ai-legion/root); write_latency_probe any-reader grant.
+- 5-cycle m5stick payment soak running (m5-soak.log).

@@ -44,3 +44,18 @@ emit a live grid of tested/works/blocked per cell. Axes:
 "microbits/microfips" in chat = **micronuts** (Amperstrand mint/wallet
 Rust stack); "nucula with c nucula" = nucula C3 board; m5stick/522 =
 M5Stick MFRC522 reader seat.
+
+
+## 2026-10-23 — m5stick/MFRC522 × S20 HCE (owner-assigned window)
+
+| cell | result | evidence |
+|---|---|---|
+| MFRC522 ← cashu.me HCE read (creqA) | **GREEN** | full NDEF 94B, CC identical to ACR/nucula, 0.09s read |
+| MFRC522 → cashu.me HCE write (token) | **GREEN** | T5[M5stick GemPC] PASSED 2:19 (full payment, balance asserted) |
+| per-APDU latency | **34.0 ms median** (53 chunks/1.8s) | write_latency_probe; vs ACR ~15ms, nucula 400ms (#408) |
+
+Notes: the 'console mode' diagnosis was wrong — the stick was in reader mode
+all along; a foreign lane's serial holder broke pcscd's GemPC init (port
+contention, not firmware state). Self-held labgrid places ('already
+acquired') now count as present in conftest. m5stick grant added to the
+arbiter (ACR muted + broker parked + pcscd restart).

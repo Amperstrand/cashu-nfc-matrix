@@ -1,0 +1,13 @@
+{"t": 0.0, "wall": "16:41:30", "kind": "run", "text": "start"}
+{"t": 0.0, "wall": "16:41:30", "kind": "follower", "text": "started wire-broker.log"}
+{"t": 0.0, "wall": "16:41:30", "kind": "follower", "text": "started phone-logcat.log"}
+{"t": 72.64, "wall": "16:42:43", "kind": "wallet", "text": "wipe done, arming 21 sat request"}
+{"t": 102.17, "wall": "16:43:12", "kind": "wallet", "text": "armed", "amount": 21}
+{"t": 102.47, "wall": "16:43:13", "kind": "still", "text": "armed-request: 122604B -> 164312-armed-request.png"}
+{"t": 109.3, "wall": "16:43:20", "kind": "nfc", "text": "field granted; payer connecting via M5stick GemPC"}
+{"t": 112.91, "wall": "16:43:23", "kind": "nfc", "text": "token written", "reader": "M5stick GemPC", "chunks": 53, "write_s": 1.8}
+{"t": 112.91, "wall": "16:43:23", "kind": "mint", "text": "21 sats token, 2722 chars"}
+{"t": 125.78, "wall": "16:43:36", "kind": "wallet", "text": "phone shows Payment received"}
+{"t": 126.11, "wall": "16:43:36", "kind": "still", "text": "payment-received: 63008B -> 164336-payment-received.png"}
+{"t": 139.36, "wall": "16:43:50", "kind": "run", "text": "finish", "summary": "all green; footage in /tmp/opencode/wallet-matrix/cashu-nfc-matrix/results/hil-20261023-164130"}
+{"t": 139.71, "wall": "16:43:50", "kind": "still", "text": "run-terminal: 104152B -> 164350-run-terminal.png"}

@@ -157,6 +157,8 @@ def main(argv: list[str] | None = None) -> int:
     sp.add_argument("--fake", help="fixture json (dev: no hardware)")
     sp.add_argument("--serial", default=PHONE_SERIAL_DEFAULT)
     sp.set_defaults(fn=cmd_survey)
+    from .registry import extend_parser  # noqa: E402
+    extend_parser(sub)
     args = ap.parse_args(argv)
     return args.fn(args)
 

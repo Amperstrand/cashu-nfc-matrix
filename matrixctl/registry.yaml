@@ -1,0 +1,87 @@
+# Cell registry — DATA, owner-tunable without touching runner code.
+# Schema per /root/src/wallet-matrix-automation-plan.md §2:
+#   requires: {phone_at, c3, m5stick, network}   physical facts needed
+#   tier:      core | extended | opportunistic   scheduler class (§3)
+#   cost:      {wall_min, wedge}                 wall time + known wedge exposure
+#   value:     drift class caught
+#   max_age_d: staleness budget in days (core 7 / extended 30 / opportunistic none)
+#   suite:     pytest node / bench tool that runs it (matrixctl run)
+
+cells:
+  cashu_me-nucula-read:
+    requires: {phone_at: nucula-coil, c3: ccid}
+    tier: core
+    cost: {wall_min: 1, wedge: none}
+    value: "firmware regression (PN7160 exchange path)"
+    max_age_d: 7
+    suite: "suites/test_t2_tap_read.py::test_cashu_me_request[Nucula CCID]"
+  cashu_me-nucula-payment:
+    requires: {phone_at: nucula-coil, c3: ccid}
+    tier: core
+    cost: {wall_min: 3, wedge: "pcscd churn (heals via pcscd-ctl)"}
+    value: "full-stack firmware+wallet regression (T5)"
+    max_age_d: 7
+    suite: "suites/test_t5_payment_roundtrip.py::test_nfc_payment_round_trip[Nucula CCID]"
+  cashu_me-m5stick-read:
+    requires: {phone_at: m5stick-coil}
+    tier: core
+    cost: {wall_min: 1, wedge: none}
+    value: "MFRC522 reader path regression"
+    max_age_d: 7
+    suite: "suites/test_t2_tap_read.py::test_cashu_me_request[M5stick GemPC]"
+  cashu_me-m5stick-payment:
+    requires: {phone_at: m5stick-coil}
+    tier: core
+    cost: {wall_min: 3, wedge: "soft wedge after ~7 cycles (ccid-firmware-rs#444)"}
+    value: "full-stack MFRC522 regression (T5)"
+    max_age_d: 7
+    suite: "suites/test_t5_payment_roundtrip.py::test_nfc_payment_round_trip[M5stick GemPC]"
+  soak-nucula:
+    requires: {phone_at: nucula-coil, c3: ccid}
+    tier: extended
+    cost: {wall_min: 15, wedge: "pcscd churn; heals via pcscd-ctl"}
+    value: "sustained-traffic drift + perf column"
+    max_age_d: 30
+    suite: "SOAK_READER='Nucula CCID' bench/payment_soak.py"
+  soak-m5stick:
+    requires: {phone_at: m5stick-coil}
+    tier: extended
+    cost: {wall_min: 12, wedge: "#444 soft wedge at ~7 cycles"}
+    value: "sustained-traffic drift (#444 tracking)"
+    max_age_d: 30
+    suite: "SOAK_READER='M5stick GemPC' bench/payment_soak.py"
+  perf-columns:
+    requires: {phone_at: any-reader-coil}
+    tier: extended
+    cost: {wall_min: 4, wedge: none}
+    value: "per-APDU latency regression (#408 curve)"
+    max_age_d: 30
+    suite: "bench/write_latency_probe.py (armed request)"
+  numo-read:
+    requires: {phone_at: any-reader-coil}
+    tier: extended
+    cost: {wall_min: 2, wedge: "sticky keypad amount (driver clears)"}
+    value: "wallet-app update drift (Numo HCE)"
+    max_age_d: 30
+    suite: "suites/test_t2_tap_read.py::test_numo_request"
+  cashu_me-acr-payment:
+    requires: {phone_at: acr-stack}
+    tier: opportunistic
+    cost: {wall_min: 3, wedge: none}
+    value: "reference-reader parity column"
+    max_age_d: null
+    suite: "suites/test_t5_payment_roundtrip.py::test_nfc_payment_round_trip[ACR1252]"
+  m5stick-acr-crosstalk:
+    requires: {phone_at: off-bench}
+    tier: opportunistic
+    cost: {wall_min: 2, wedge: none}
+    value: "reader-to-reader interference physics"
+    max_age_d: null
+    suite: "manual probe (no phone): ACR PICC presence w/ m5stick stacked"
+  cardman-contact:
+    requires: {phone_at: off-bench}
+    tier: opportunistic
+    cost: {wall_min: 5, wedge: none}
+    value: "contact-reader sanity (CardMan 3121)"
+    max_age_d: null
+    suite: "manual: any contact card + CardMan reader"

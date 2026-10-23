@@ -84,14 +84,12 @@ def _pcscd_restart() -> None:
     # disturbance-domain lock (naked systemctl restarts cycled pcscd ~80x
     # in 3h bench-wide and dropped other lanes' readers)
     r = sh(["/root/.local/bin/pcscd-ctl", "restart",
-            "--project", "wallet-matrix", "--reason", "field-arbiter-grant"],
-           timeout=90)
+            "--project", "wallet-matrix", "--reason", "field-arbiter-grant"])
     if r.returncode != 0:
         import time as _t
         _t.sleep(20)
         r2 = sh(["/root/.local/bin/pcscd-ctl", "restart",
-                 "--project", "wallet-matrix", "--reason", "field-arbiter-grant"],
-                timeout=90)
+                 "--project", "wallet-matrix", "--reason", "field-arbiter-grant"])
         if r2.returncode != 0:
             sh(_sudo(["systemctl", "restart", "pcscd"]))
     time.sleep(4)

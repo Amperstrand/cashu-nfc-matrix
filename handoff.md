@@ -286,3 +286,22 @@
 - NEXT: step 2 cell registry (requires/tier/cost/value/max-age, generalize
   bench/geometry.py), then 'next' ranking, then status/README + geometry
   docs + CI wiring.
+
+## 2026-10-23 ~20:4x — AUTOMATION PLAN steps 2-4 LANDED (owner plan file now real)
+
+- Plan file existed this time (owner wrote it); step 1 stands unchanged.
+- STEP 2 (960a2c9 + 05f4fa5): matrixctl/registry.yaml = cell registry DATA
+  (requires/tier/cost/value/max_age/suite), seeded per §3 (core: cashu.me x
+  nucula+m5stick read+payment; extended: soaks/perf/numo; opportunistic:
+  ACR/crosstalk/CardMan). plan/set/run/verify-state subcommands. bench-facts.yaml
+  = human physical truth ('set phone.at ...'); planner demo on REAL state:
+  phone nucula + c3 bolty => zero core runnable (the standdown as data).
+- STEP 3 (258e4fb): 'next' — ranking (unlocked value x staleness)/effort over
+  physical-action futures; staleness from results/*.jsonl vs max_age. Live
+  answer for current bench: move phone -> m5stick-coil (unlocks read+payment+
+  soak; outranks c3 reflash at 15min effort). Owner-facing one-action output.
+- STEP 4 (75b5c57): staleness marks in render_matrix (fresh/aging/stale/never),
+  docs/geometry.md with photo slots for the 4 positions, hil.yml survey+next
+  pre-steps (bench-state becomes a CI artifact + the human directive prints
+  in every run log). 11 plain tests green.
+- Tier tuning = registry.yaml data only; runner code untouched.

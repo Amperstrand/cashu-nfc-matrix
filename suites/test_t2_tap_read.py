@@ -89,8 +89,11 @@ def test_unarmed_e104_absent(cashu_me, acr_place):
         capture_output=True, text=True).stdout.find("com.electricdreams.numo") < 0,
     reason="Numo not installed on bench phone",
 )
-def test_numo_request_over_acr(phone_place, acr_place, evidence_dir):
-    """Numo v1.9 PoS: Charge screen arms HCE; request is BIP21+creqB."""
+@pytest.mark.parametrize("reader", ["ACR1252", "M5stick GemPC"])
+def test_numo_request(phone_place, acr_place, evidence_dir, reader):
+    """Numo v1.9 PoS: Charge screen arms HCE; request is BIP21+CREQ or
+    BIP21+LIGHTNING (both observed on the bench; both are NDEF URI records).
+    """
     import sys
     import time
 
@@ -104,13 +107,14 @@ def test_numo_request_over_acr(phone_place, acr_place, evidence_dir):
         d.charge(33)
         assert d.is_armed(), f"numo not armed: {d.screen()!r}"
         # isolate: cashu.me is the AID default; disable it for this probe
-        sh_out = ui.adb(phone_place, "shell", "pm", "disable-user", "--user", "0", "com.cashu.me")
+        ui.adb(phone_place, "shell", "pm", "disable-user", "--user", "0", "com.cashu.me")
         time.sleep(1.0)
-        res = _probe_with_retries("ACR1252")
-        (evidence_dir / "t2-numo.json").write_text(__import__("json").dumps(res, indent=1))
+        res = _probe_with_retries(reader)
+        (evidence_dir / f"t2-numo-{reader.split()[0].lower()}.json").write_text(
+            __import__("json").dumps(res, indent=1))
         assert res.get("select_aid_sw") == "9000"
         assert res["cc"] == CC_PINNED
         text = res.get("ndef_text", "")
-        assert text.upper().startswith("BITCOIN:?CREQ="), f"unexpected numo payload: {text[:60]!r}"
+        assert text.upper().startswith("BITCOIN:?"), f"unexpected numo payload: {text[:60]!r}"
     finally:
         ui.adb(phone_place, "shell", "pm", "enable", "com.cashu.me")

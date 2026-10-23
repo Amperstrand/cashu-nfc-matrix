@@ -28,7 +28,10 @@ class NumoDriver:
         # onboarding guard: if the wallet-setup flow shows, run through it
         # (fresh-install only; leaves default mint, zero funds)
         self._finish_onboarding_if_present()
-        ui.wait_for(self.serial, contains="Charge", timeout=25)
+        # v1.9 keypad: Charge materializes only after valid amount entry;
+        # 'Maximum:' is an over-limit WARNING, not a resting element.
+        # Stable keypad marker: the digit grid itself.
+        ui.wait_for(self.serial, text="7", timeout=25)
 
     def _finish_onboarding_if_present(self) -> None:
         for _ in range(8):
@@ -47,6 +50,10 @@ class NumoDriver:
 
     def charge(self, amount: int) -> str:
         """Type amount on keypad and hit Charge. Returns pay-screen status."""
+        # the amount field is STICKY across app restarts; a stale amount can
+        # exceed 'Maximum: 150000 sats' which suppresses the Charge button
+        ui.tap_text(self.serial, "C", timeout=8)
+        time.sleep(0.4)
         for digit in str(amount):
             ui.tap_text(self.serial, digit, timeout=8)
             time.sleep(0.25)

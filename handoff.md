@@ -210,3 +210,16 @@
   m5stick section, soak grant mapping, conftest self-hold.
 - NEXT when phone can move: nucula comparison soak (13-green ceiling) or ACR
   cell. m5stick ceiling = 7 cycles until the firmware lane fixes the wedge.
+
+## 2026-10-23 ~18:15 — #408 FIX BUILT + FLASHED LIVE (PR #445)
+
+- Branch perf/408-harvest-first-wait (ccid-firmware-rs): DATA_FIRST_WAIT_MS=10
+  in credit-gate + RX collect loops; stall clock stays nominal; 2 new host
+  regression tests (95/95 green).
+- Built `c3-ccid` profile (BUILD GOTCHA: session venv on PATH breaks
+  idf_tools.py venv detection — use `env -i HOME=/root PATH=/root/.cargo/bin:...`).
+- Flashed at 0x40000 (esptool via build.sh --flash), boot check passed,
+  broker restarted, 'Nucula CCID via broker' enumerated, wire frames flowing.
+- PR #445 open. LATENCY VERIFICATION PENDING: phone must return to the
+  nucula coil (write_latency_probe + 0xD2: expect 399ms -> tens of ms).
+- Broker stopped/restarted by me during flash (owner of broker this window).

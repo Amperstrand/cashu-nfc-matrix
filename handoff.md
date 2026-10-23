@@ -223,3 +223,23 @@
 - PR #445 open. LATENCY VERIFICATION PENDING: phone must return to the
   nucula coil (write_latency_probe + 0xD2: expect 399ms -> tens of ms).
 - Broker stopped/restarted by me during flash (owner of broker this window).
+
+## 2026-10-23 ~18:5x — INTERFERENCE EVENT + STANDDOWN (nucula side)
+
+- ntag424-delta lane alert: c3 runs BOLTY board-nucula firmware (owner-
+  approved 16:45; my 18:05 c3-ccid flash was measured through until ~18:2x
+  then superseded). All 'Nucula CCID' probing STOPPED and stays stopped
+  until the board returns to CCID duty.
+- Bench damage acknowledged: my arbiter's naked pcscd restarts (per grant,
+  soak cycles, flash cycles) = the 80-cycle pcscd churn. FIXED: arbiter now
+  routes through pcscd-ctl --project wallet-matrix (tollgate-lab #15/#16),
+  commit 3c5ab1f. Coordination reply: ops#26 / kanban t_4bc7ec5b.
+- #408 STATUS: PR #445 carries round-1 (400->210ms constant, live-measured)
+  + round-2 (progressive ladder + LAST_DATA_ARRIVAL_MS via 0xD2 word 8,
+  95/95 host tests, built ok, flashed once but superseded). VERIFICATION
+  RECIPE READY for the next CCID window: flash perf/408-harvest-first-wait,
+  write_latency_probe + 0xD2 -> expect <210ms and the arrival word tells
+  exactly where DATA lands.
+- Remaining matrix work re-targets ACR1252/CardMan ONLY. Phone must move
+  onto the ACR stack (on top of the m5stick = phone>m5stick>ACR) for
+  T5[ACR] + the m5stick x ACR crosstalk probes.

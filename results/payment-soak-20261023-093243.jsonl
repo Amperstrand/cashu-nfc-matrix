@@ -1,0 +1,1 @@
+{"cycle": 0, "ts": "09:32:51", "mint_s": 2.2, "ok": false, "error": "CardConnectionException('Failed to transmit with protocol T1. RPC transport error.')", "recovered": true, "cycle_s": 140.7}

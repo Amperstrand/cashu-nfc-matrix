@@ -53,6 +53,30 @@ def _acr_bind(on: bool) -> None:
 
 def _broker(on: bool) -> None:
     sh(_sudo(["systemctl", "start" if on else "stop", "nucula-ccid-broker"]))
+    if on:
+        import time as _t
+        # the broker creates its PTY + /dev/nucula-ccid symlink milliseconds
+        # after systemd reports active — restarting pcscd before the swap binds
+        # the dead PTY and the FIRST card connect dies with RPC transport error
+        # (soak cycle-0 class). Poll until the symlink matches the broker's
+        # live pts.
+        import subprocess as _sp
+        import os as _o
+        for _ in range(50):
+            try:
+                pid = _sp.run(["systemctl", "show", "nucula-ccid-broker",
+                               "-p", "MainPID", "--value"],
+                              capture_output=True, text=True).stdout.strip()
+                fds = _o.listdir(f"/proc/{pid}/fd") if pid.isdigit() else []
+                pts = {f"/dev/{_o.readlink(f'/proc/{pid}/fd/{f}')}"
+                       for f in fds}
+                link = _o.readlink("/dev/nucula-ccid") if _o.path.exists(
+                    "/dev/nucula-ccid") else None
+                if link and link in pts:
+                    return
+            except OSError:
+                pass
+            _t.sleep(0.1)
 
 
 def _pcscd_restart() -> None:

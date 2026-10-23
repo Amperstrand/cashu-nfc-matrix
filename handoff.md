@@ -195,3 +195,18 @@
 - Fixes: driver launch-from-launcher; conftest self-hold acceptance
   ('already acquired' + ai-legion/root); write_latency_probe any-reader grant.
 - 5-cycle m5stick payment soak running (m5-soak.log).
+
+## 2026-10-23 m5stick window WRAP (~2h in)
+
+- 10-cycle soak: **7 ok / 3 fail — sustained-traffic soft wedge** filed as
+  ccid-firmware-rs issue (see latest): reader deaf after ~7 payment cycles,
+  pcscd reinit recovers. 5/5 green soak ran minutes earlier (cycle-count
+  class, not time).
+- Numo x m5stick GREEN (T2 formal row param'd; 433B BIP21 URI). ACR cell of
+  the same param = geometry-gated (phone on m5stick).
+- boltcard-hce x m5stick inconclusive (SELECT 6400, service un-armed —
+  belongs to boltcard2 lane; not chased).
+- All commits pushed (b187904..): T2 numo param, numo driver fixes, PROTOCOL
+  m5stick section, soak grant mapping, conftest self-hold.
+- NEXT when phone can move: nucula comparison soak (13-green ceiling) or ACR
+  cell. m5stick ceiling = 7 cycles until the firmware lane fixes the wedge.

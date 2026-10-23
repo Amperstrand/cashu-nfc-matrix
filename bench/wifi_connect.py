@@ -11,7 +11,9 @@ import subprocess
 import sys
 import time
 
-sys.path.insert(0, "/tmp/opencode/wallet-matrix/cashu-nfc-matrix/drivers")
+sys.path.insert(0, str(__import__("pathlib").Path(__file__).resolve().parent.parent / "drivers"))
+APK_DIR = __import__("os").environ.get(
+    "WALLET_APK_DIR", str(__import__("pathlib").Path.home() / "src" / "wallet-matrix-apks"))
 import ui  # noqa: E402
 
 S = ui.DEFAULT_SERIAL

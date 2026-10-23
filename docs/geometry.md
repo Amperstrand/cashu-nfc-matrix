@@ -12,8 +12,12 @@ Phone flat over the m5stick MFRC522 antenna (the stick's coil face).
 [photo: owner]
 
 ## acr-stack
-Phone on TOP of the ACR1252 antenna (the m5stick may be stacked beneath
-the phone for crosstalk cells: phone > m5stick > ACR).
+Phone DIRECTLY on the ACR1252 antenna, label up, coil area centered.
+MEASURED 2026-10-23: a m5stick body between phone and ACR (phone >
+m5stick > ACR) KILLS coupling — NoCard on a healthy armed phone + healthy
+reader (PCB/battery shields the 13.56 MHz path). The stick goes BESIDE
+the antenna, never between. The c3 board, by contrast, couples fine as a
+spacer (phone > nucula > ACR worked historically).
 [photo: owner]
 
 ## off-bench

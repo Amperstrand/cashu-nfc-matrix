@@ -316,3 +316,13 @@
 - Lanes notified via herdr (w0:pP ntag424-delta + w16:p8 nucula-verify).
 - Concurrent: T5[ACR1252] rerun in flight (first attempt's mint step
   failed transiently — manual mint minted fine).
+
+## 2026-10-23 ~21:4x — ACR stack geometry finding + grant-mapping bugfix
+
+- T5[ACR] attempts: (1) transient mint failure, (2) MY pcscd-ctl kwarg
+  TypeError, (3) MY grant-mapping bug ('ACR' dict key never matched
+  'ACR1252' -> ACR cell granted m5stick, unbinding its own reader) — both
+  fixed + pushed. (4) grant now correct; phone armed; ACR healthy — but
+  NoCard: the m5stick body sits BETWEEN phone and ACR and kills coupling.
+  Owner action: phone DIRECTLY on the ACR antenna; stick beside it.
+  Documented in docs/geometry.md.

@@ -11719,3 +11719,214 @@
 10-23 20:47:59.564 I/cdk     (30621): get_melt_quotes;
 10-23 20:48:02.406 D/NfcService( 1971): MSG_UNROUTE_ENTRY
 10-23 20:48:02.409 D/NfcService( 1971): MSG_COMMIT_ROUTING
+10-23 20:49:10.085 I/cdk     (32175): load_wallets;
+10-23 20:49:10.087 I/cdk     (32175): get_mints;
+10-23 20:49:10.177 I/cdk     (32175): create_wallet; mint_url=MintUrl("https://testnut.cashu.space") unit=Sat config=None
+10-23 20:49:10.182 I/cdk     (32175): create_wallet; mint_url=MintUrl("https://testnut.cashu.space") unit=Sat config=None
+10-23 20:49:10.184 I/cdk     (32175): get_wallet; mint_url=MintUrl("https://testnut.cashu.space") unit=Sat
+10-23 20:49:10.185 I/cdk     (32175): fetch_mint_info;
+10-23 20:49:10.188 I/cdk     (32175): get_mint; mint_url=MintUrl("https://testnut.cashu.space")
+10-23 20:49:10.196 I/cdk     (32175): get_mint_keysets; mint_url=MintUrl("https://testnut.cashu.space")
+10-23 20:49:10.198 I/cdk     (32175): Loaded cache from database for https://testnut.cashu.space with 0 keysets (version 1)
+10-23 20:49:10.349 I/cdk     (32175): get_mint_keysets; mint_url=https://testnut.cashu.space
+10-23 20:49:10.410 I/cdk     (32175): get_mint_keyset; keyset_id=010eca897fd3b9d496c4ef28de870727ef616cb0a05404035c65cf5cc6fa879504 mint_url=https://testnut.cashu.space
+10-23 20:49:10.469 I/cdk     (32175): get_mint_keyset; keyset_id=017bc604aaa08e9b58804bdd552286f15d75ebdaa3d1bccc2a52fc7406b4040fda mint_url=https://testnut.cashu.space
+10-23 20:49:10.544 I/cdk     (32175): Updated cache for https://testnut.cashu.space with 2 keysets (version 2)
+10-23 20:49:10.563 I/cdk     (32175): add_mint; mint_url=MintUrl("https://testnut.cashu.space")
+10-23 20:49:10.577 I/cdk     (32175): add_mint_keysets; mint_url=MintUrl("https://testnut.cashu.space")
+10-23 20:49:10.584 I/cdk     (32175): get_keys; keyset_id=010eca897fd3b9d496c4ef28de870727ef616cb0a05404035c65cf5cc6fa879504
+10-23 20:49:10.587 I/cdk     (32175): add_keys;
+10-23 20:49:10.590 I/cdk     (32175): get_keys; keyset_id=017bc604aaa08e9b58804bdd552286f15d75ebdaa3d1bccc2a52fc7406b4040fda
+10-23 20:49:10.593 I/cdk     (32175): add_keys;
+10-23 20:49:10.595 I/cdk     (32175): Mint has auth enabled creating auth wallet
+10-23 20:49:10.595 I/cdk     (32175): refresh_keysets;
+10-23 20:49:10.595 I/cdk     (32175): load_mint_keysets;
+10-23 20:49:10.596 I/cdk     (32175): get_mint_blind_auth_keysets; mint_url=https://testnut.cashu.space
+10-23 20:49:10.725 I/cdk     (32175): Updated cache for https://testnut.cashu.space with 2 keysets (version 2)
+10-23 20:49:10.725 E/cdk     (32175): Could not fetch auth keysets: Unknown Keyset
+10-23 20:49:10.747 I/cdk     (32175): create_wallet; mint_url=MintUrl("https://testnut.cashu.space") unit=Sat config=None
+10-23 20:49:10.748 I/cdk     (32175): get_wallet; mint_url=MintUrl("https://testnut.cashu.space") unit=Sat
+10-23 20:49:10.749 I/cdk     (32175): fetch_mint_info;
+10-23 20:49:10.751 I/cdk     (32175): get_mint; mint_url=MintUrl("https://testnut.cashu.space")
+10-23 20:49:10.761 I/cdk     (32175): get_mint_keysets; mint_url=MintUrl("https://testnut.cashu.space")
+10-23 20:49:10.761 I/cdk     (32175): sql_row_to_keyset;
+10-23 20:49:10.761 I/cdk     (32175): sql_row_to_keyset;
+10-23 20:49:10.766 I/cdk     (32175): get_keys; keyset_id=010eca897fd3b9d496c4ef28de870727ef616cb0a05404035c65cf5cc6fa879504
+10-23 20:49:10.771 I/cdk     (32175): get_keys; keyset_id=017bc604aaa08e9b58804bdd552286f15d75ebdaa3d1bccc2a52fc7406b4040fda
+10-23 20:49:10.776 I/cdk     (32175): Loaded cache from database for https://testnut.cashu.space with 2 keysets (version 1)
+10-23 20:49:10.904 I/cdk     (32175): get_mint_keysets; mint_url=https://testnut.cashu.space
+10-23 20:49:10.998 I/cdk     (32175): Updated cache for https://testnut.cashu.space with 2 keysets (version 2)
+10-23 20:49:11.003 I/cdk     (32175): add_mint; mint_url=MintUrl("https://testnut.cashu.space")
+10-23 20:49:11.008 I/cdk     (32175): add_mint_keysets; mint_url=MintUrl("https://testnut.cashu.space")
+10-23 20:49:11.010 I/cdk     (32175): get_keys; keyset_id=010eca897fd3b9d496c4ef28de870727ef616cb0a05404035c65cf5cc6fa879504
+10-23 20:49:11.019 I/cdk     (32175): get_keys; keyset_id=017bc604aaa08e9b58804bdd552286f15d75ebdaa3d1bccc2a52fc7406b4040fda
+10-23 20:49:11.022 I/cdk     (32175): Mint has auth enabled creating auth wallet
+10-23 20:49:11.022 I/cdk     (32175): refresh_keysets;
+10-23 20:49:11.022 I/cdk     (32175): load_mint_keysets;
+10-23 20:49:11.022 I/cdk     (32175): get_mint_blind_auth_keysets; mint_url=https://testnut.cashu.space
+10-23 20:49:11.202 I/cdk     (32175): Updated cache for https://testnut.cashu.space with 2 keysets (version 2)
+10-23 20:49:11.203 E/cdk     (32175): Could not fetch auth keysets: Unknown Keyset
+10-23 20:49:11.205 I/cdk     (32175): restore_with_opts; opts=NUT13Options { batch_size: 100, max_gap: 3 }
+10-23 20:49:11.210 I/cdk     (32175): get_mint; mint_url=MintUrl("https://testnut.cashu.space")
+10-23 20:49:11.213 I/cdk     (32175): get_mint_keysets; filter=All
+10-23 20:49:11.213 I/cdk     (32175): load_keyset_keys; keyset_id=017bc604aaa08e9b58804bdd552286f15d75ebdaa3d1bccc2a52fc7406b4040fda
+10-23 20:49:11.231 I/cdk     (32175): post_restore; mint_url=https://testnut.cashu.space
+10-23 20:49:11.231 I/cdk     (32175): get_auth_token; method=Post path=Restore
+10-23 20:49:11.231 I/cdk     (32175): get_auth_for_request; method=ProtectedEndpoint { method: Post, path: Restore }
+10-23 20:49:11.231 I/cdk     (32175): is_protected; method=ProtectedEndpoint { method: Post, path: Restore }
+10-23 20:49:11.415 I/cdk     (32175): post_restore; mint_url=https://testnut.cashu.space
+10-23 20:49:11.415 I/cdk     (32175): get_auth_token; method=Post path=Restore
+10-23 20:49:11.415 I/cdk     (32175): get_auth_for_request; method=ProtectedEndpoint { method: Post, path: Restore }
+10-23 20:49:11.415 I/cdk     (32175): is_protected; method=ProtectedEndpoint { method: Post, path: Restore }
+10-23 20:49:11.549 I/cdk     (32175): post_restore; mint_url=https://testnut.cashu.space
+10-23 20:49:11.549 I/cdk     (32175): get_auth_token; method=Post path=Restore
+10-23 20:49:11.549 I/cdk     (32175): get_auth_for_request; method=ProtectedEndpoint { method: Post, path: Restore }
+10-23 20:49:11.549 I/cdk     (32175): is_protected; method=ProtectedEndpoint { method: Post, path: Restore }
+10-23 20:49:11.649 I/cdk     (32175): get_wallets;
+10-23 20:49:11.651 I/cdk     (32175): get_wallet; mint_url=MintUrl("https://testnut.cashu.space") unit=Sat
+10-23 20:49:11.652 I/cdk     (32175): total_balance;
+10-23 20:49:11.663 I/cdk     (32175): backup_mints; options=BackupOptions { client: Some("cashu.me") }
+10-23 20:49:11.663 I/cdk     (32175): get_wallets;
+10-23 20:49:11.914 I/cdk     (32175): Connected to 'wss://relay.primal.net'
+10-23 20:49:11.967 I/cdk     (32175): Connected to 'wss://relay.damus.io'
+10-23 20:49:11.986 I/cdk     (32175): Connected to 'wss://nos.lol'
+10-23 20:49:12.197 I/cdk     (32175): Completely disconnected from 'wss://relay.damus.io'
+10-23 20:49:12.197 I/cdk     (32175): Completely disconnected from 'wss://relay.primal.net'
+10-23 20:49:12.197 I/cdk     (32175): Completely disconnected from 'wss://nos.lol'
+10-23 20:49:12.205 I/cdk     (32175): get_wallet; mint_url=MintUrl("https://testnut.cashu.space") unit=Usd
+10-23 20:49:12.225 I/cdk     (32175): get_wallet; mint_url=MintUrl("https://testnut.cashu.space") unit=Sat
+10-23 20:49:12.230 I/cdk     (32175): list_transactions; mint_url=Some(MintUrl("https://testnut.cashu.space")) direction=Some(Incoming) unit=Some(Sat)
+10-23 20:49:12.235 I/cdk     (32175): list_transactions; mint_url=Some(MintUrl("https://testnut.cashu.space")) direction=Some(Outgoing) unit=Some(Sat)
+10-23 20:49:12.240 I/cdk     (32175): get_wallet; mint_url=MintUrl("https://testnut.cashu.space") unit=Usd
+10-23 20:49:12.243 I/cdk     (32175): get_unissued_mint_quotes;
+10-23 20:49:12.245 I/cdk     (32175): get_melt_quotes;
+10-23 20:49:13.827 I/cdk     (32175): get_unissued_mint_quotes;
+10-23 20:49:13.838 I/cdk     (32175): get_wallet; mint_url=MintUrl("https://testnut.cashu.space") unit=Sat
+10-23 20:49:13.845 I/cdk     (32175): list_transactions; mint_url=Some(MintUrl("https://testnut.cashu.space")) direction=Some(Incoming) unit=Some(Sat)
+10-23 20:49:13.853 I/cdk     (32175): list_transactions; mint_url=Some(MintUrl("https://testnut.cashu.space")) direction=Some(Outgoing) unit=Some(Sat)
+10-23 20:49:13.857 I/cdk     (32175): get_wallet; mint_url=MintUrl("https://testnut.cashu.space") unit=Usd
+10-23 20:49:13.862 I/cdk     (32175): get_unissued_mint_quotes;
+10-23 20:49:13.864 I/cdk     (32175): get_melt_quotes;
+10-23 20:49:18.792 I/cdk     (32175): create_wallet; mint_url=MintUrl("https://testnut.cashu.space") unit=Sat config=None
+10-23 20:49:18.802 I/cdk     (32175): create_wallet; mint_url=MintUrl("https://testnut.cashu.space") unit=Sat config=None
+10-23 20:49:18.807 I/cdk     (32175): get_wallet; mint_url=MintUrl("https://testnut.cashu.space") unit=Sat
+10-23 20:49:18.807 I/cdk     (32175): fetch_mint_info;
+10-23 20:49:18.808 I/cdk     (32175): get_mint; mint_url=MintUrl("https://testnut.cashu.space")
+10-23 20:49:18.810 I/cdk     (32175): get_mint_keysets; mint_url=MintUrl("https://testnut.cashu.space")
+10-23 20:49:18.810 I/cdk     (32175): sql_row_to_keyset;
+10-23 20:49:18.810 I/cdk     (32175): sql_row_to_keyset;
+10-23 20:49:18.813 I/cdk     (32175): get_keys; keyset_id=010eca897fd3b9d496c4ef28de870727ef616cb0a05404035c65cf5cc6fa879504
+10-23 20:49:18.823 I/cdk     (32175): get_keys; keyset_id=017bc604aaa08e9b58804bdd552286f15d75ebdaa3d1bccc2a52fc7406b4040fda
+10-23 20:49:18.832 I/cdk     (32175): Loaded cache from database for https://testnut.cashu.space with 2 keysets (version 1)
+10-23 20:49:18.979 I/cdk     (32175): get_mint_keysets; mint_url=https://testnut.cashu.space
+10-23 20:49:19.089 I/cdk     (32175): Updated cache for https://testnut.cashu.space with 2 keysets (version 2)
+10-23 20:49:19.094 I/cdk     (32175): add_mint; mint_url=MintUrl("https://testnut.cashu.space")
+10-23 20:49:19.102 I/cdk     (32175): add_mint_keysets; mint_url=MintUrl("https://testnut.cashu.space")
+10-23 20:49:19.105 I/cdk     (32175): get_keys; keyset_id=017bc604aaa08e9b58804bdd552286f15d75ebdaa3d1bccc2a52fc7406b4040fda
+10-23 20:49:19.114 I/cdk     (32175): get_keys; keyset_id=010eca897fd3b9d496c4ef28de870727ef616cb0a05404035c65cf5cc6fa879504
+10-23 20:49:19.124 I/cdk     (32175): Mint has auth enabled creating auth wallet
+10-23 20:49:19.124 I/cdk     (32175): refresh_keysets;
+10-23 20:49:19.124 I/cdk     (32175): load_mint_keysets;
+10-23 20:49:19.124 I/cdk     (32175): get_mint_blind_auth_keysets; mint_url=https://testnut.cashu.space
+10-23 20:49:19.307 I/cdk     (32175): Updated cache for https://testnut.cashu.space with 2 keysets (version 2)
+10-23 20:49:19.307 E/cdk     (32175): Could not fetch auth keysets: Unknown Keyset
+10-23 20:49:19.314 I/cdk     (32175): get_unissued_mint_quotes;
+10-23 20:49:19.332 I/cdk     (32175): get_wallet; mint_url=MintUrl("https://testnut.cashu.space") unit=Sat
+10-23 20:49:19.340 I/cdk     (32175): list_transactions; mint_url=Some(MintUrl("https://testnut.cashu.space")) direction=Some(Incoming) unit=Some(Sat)
+10-23 20:49:19.347 I/cdk     (32175): list_transactions; mint_url=Some(MintUrl("https://testnut.cashu.space")) direction=Some(Outgoing) unit=Some(Sat)
+10-23 20:49:19.348 I/cdk     (32175): get_wallet; mint_url=MintUrl("https://testnut.cashu.space") unit=Usd
+10-23 20:49:19.365 I/cdk     (32175): get_unissued_mint_quotes;
+10-23 20:49:19.367 I/cdk     (32175): get_melt_quotes;
+10-23 20:49:24.373 I/cdk     (32175): get_unissued_mint_quotes;
+10-23 20:49:24.381 I/cdk     (32175): get_wallet; mint_url=MintUrl("https://testnut.cashu.space") unit=Sat
+10-23 20:49:24.385 I/cdk     (32175): list_transactions; mint_url=Some(MintUrl("https://testnut.cashu.space")) direction=Some(Incoming) unit=Some(Sat)
+10-23 20:49:24.390 I/cdk     (32175): list_transactions; mint_url=Some(MintUrl("https://testnut.cashu.space")) direction=Some(Outgoing) unit=Some(Sat)
+10-23 20:49:24.393 I/cdk     (32175): get_wallet; mint_url=MintUrl("https://testnut.cashu.space") unit=Usd
+10-23 20:49:24.395 I/cdk     (32175): get_unissued_mint_quotes;
+10-23 20:49:24.397 I/cdk     (32175): get_melt_quotes;
+10-23 20:49:29.408 I/cdk     (32175): get_unissued_mint_quotes;
+10-23 20:49:29.415 I/cdk     (32175): get_wallet; mint_url=MintUrl("https://testnut.cashu.space") unit=Sat
+10-23 20:49:29.418 I/cdk     (32175): list_transactions; mint_url=Some(MintUrl("https://testnut.cashu.space")) direction=Some(Incoming) unit=Some(Sat)
+10-23 20:49:29.422 I/cdk     (32175): list_transactions; mint_url=Some(MintUrl("https://testnut.cashu.space")) direction=Some(Outgoing) unit=Some(Sat)
+10-23 20:49:29.425 I/cdk     (32175): get_wallet; mint_url=MintUrl("https://testnut.cashu.space") unit=Usd
+10-23 20:49:29.428 I/cdk     (32175): get_unissued_mint_quotes;
+10-23 20:49:29.431 I/cdk     (32175): get_melt_quotes;
+10-23 20:49:34.440 I/cdk     (32175): get_unissued_mint_quotes;
+10-23 20:49:34.449 I/cdk     (32175): get_wallet; mint_url=MintUrl("https://testnut.cashu.space") unit=Sat
+10-23 20:49:34.453 I/cdk     (32175): list_transactions; mint_url=Some(MintUrl("https://testnut.cashu.space")) direction=Some(Incoming) unit=Some(Sat)
+10-23 20:49:34.460 I/cdk     (32175): list_transactions; mint_url=Some(MintUrl("https://testnut.cashu.space")) direction=Some(Outgoing) unit=Some(Sat)
+10-23 20:49:34.462 I/cdk     (32175): get_wallet; mint_url=MintUrl("https://testnut.cashu.space") unit=Usd
+10-23 20:49:34.464 I/cdk     (32175): get_unissued_mint_quotes;
+10-23 20:49:34.465 I/cdk     (32175): get_melt_quotes;
+10-23 20:49:39.473 I/cdk     (32175): get_unissued_mint_quotes;
+10-23 20:49:39.482 I/cdk     (32175): get_wallet; mint_url=MintUrl("https://testnut.cashu.space") unit=Sat
+10-23 20:49:39.486 I/cdk     (32175): list_transactions; mint_url=Some(MintUrl("https://testnut.cashu.space")) direction=Some(Incoming) unit=Some(Sat)
+10-23 20:49:39.490 I/cdk     (32175): list_transactions; mint_url=Some(MintUrl("https://testnut.cashu.space")) direction=Some(Outgoing) unit=Some(Sat)
+10-23 20:49:39.493 I/cdk     (32175): get_wallet; mint_url=MintUrl("https://testnut.cashu.space") unit=Usd
+10-23 20:49:39.496 I/cdk     (32175): get_unissued_mint_quotes;
+10-23 20:49:39.497 I/cdk     (32175): get_melt_quotes;
+10-23 20:49:44.506 I/cdk     (32175): get_unissued_mint_quotes;
+10-23 20:49:44.510 I/cdk     (32175): get_wallet; mint_url=MintUrl("https://testnut.cashu.space") unit=Sat
+10-23 20:49:44.512 I/cdk     (32175): list_transactions; mint_url=Some(MintUrl("https://testnut.cashu.space")) direction=Some(Incoming) unit=Some(Sat)
+10-23 20:49:44.515 I/cdk     (32175): list_transactions; mint_url=Some(MintUrl("https://testnut.cashu.space")) direction=Some(Outgoing) unit=Some(Sat)
+10-23 20:49:44.517 I/cdk     (32175): get_wallet; mint_url=MintUrl("https://testnut.cashu.space") unit=Usd
+10-23 20:49:44.519 I/cdk     (32175): get_unissued_mint_quotes;
+10-23 20:49:44.522 I/cdk     (32175): get_melt_quotes;
+10-23 20:49:49.530 I/cdk     (32175): get_unissued_mint_quotes;
+10-23 20:49:49.539 I/cdk     (32175): get_wallet; mint_url=MintUrl("https://testnut.cashu.space") unit=Sat
+10-23 20:49:49.543 I/cdk     (32175): list_transactions; mint_url=Some(MintUrl("https://testnut.cashu.space")) direction=Some(Incoming) unit=Some(Sat)
+10-23 20:49:49.551 I/cdk     (32175): list_transactions; mint_url=Some(MintUrl("https://testnut.cashu.space")) direction=Some(Outgoing) unit=Some(Sat)
+10-23 20:49:49.555 I/cdk     (32175): get_wallet; mint_url=MintUrl("https://testnut.cashu.space") unit=Usd
+10-23 20:49:49.561 I/cdk     (32175): get_unissued_mint_quotes;
+10-23 20:49:49.562 I/cdk     (32175): get_melt_quotes;
+10-23 20:49:54.570 I/cdk     (32175): get_unissued_mint_quotes;
+10-23 20:49:54.580 I/cdk     (32175): get_wallet; mint_url=MintUrl("https://testnut.cashu.space") unit=Sat
+10-23 20:49:54.588 I/cdk     (32175): list_transactions; mint_url=Some(MintUrl("https://testnut.cashu.space")) direction=Some(Incoming) unit=Some(Sat)
+10-23 20:49:54.594 I/cdk     (32175): list_transactions; mint_url=Some(MintUrl("https://testnut.cashu.space")) direction=Some(Outgoing) unit=Some(Sat)
+10-23 20:49:54.597 I/cdk     (32175): get_wallet; mint_url=MintUrl("https://testnut.cashu.space") unit=Usd
+10-23 20:49:54.600 I/cdk     (32175): get_unissued_mint_quotes;
+10-23 20:49:54.603 I/cdk     (32175): get_melt_quotes;
+10-23 20:49:58.754 D/NfcService( 1971): MSG_UNROUTE_ENTRY
+10-23 20:49:58.757 D/NfcService( 1971): MSG_COMMIT_ROUTING
+10-23 20:49:59.609 I/cdk     (32175): get_unissued_mint_quotes;
+10-23 20:49:59.614 I/cdk     (32175): get_wallet; mint_url=MintUrl("https://testnut.cashu.space") unit=Sat
+10-23 20:49:59.621 I/cdk     (32175): list_transactions; mint_url=Some(MintUrl("https://testnut.cashu.space")) direction=Some(Incoming) unit=Some(Sat)
+10-23 20:49:59.624 I/cdk     (32175): list_transactions; mint_url=Some(MintUrl("https://testnut.cashu.space")) direction=Some(Outgoing) unit=Some(Sat)
+10-23 20:49:59.627 I/cdk     (32175): get_wallet; mint_url=MintUrl("https://testnut.cashu.space") unit=Usd
+10-23 20:49:59.629 I/cdk     (32175): get_unissued_mint_quotes;
+10-23 20:49:59.633 I/cdk     (32175): get_melt_quotes;
+10-23 20:50:04.649 I/cdk     (32175): get_unissued_mint_quotes;
+10-23 20:50:04.668 I/cdk     (32175): get_wallet; mint_url=MintUrl("https://testnut.cashu.space") unit=Sat
+10-23 20:50:04.673 I/cdk     (32175): list_transactions; mint_url=Some(MintUrl("https://testnut.cashu.space")) direction=Some(Incoming) unit=Some(Sat)
+10-23 20:50:04.677 I/cdk     (32175): list_transactions; mint_url=Some(MintUrl("https://testnut.cashu.space")) direction=Some(Outgoing) unit=Some(Sat)
+10-23 20:50:04.678 I/cdk     (32175): get_wallet; mint_url=MintUrl("https://testnut.cashu.space") unit=Usd
+10-23 20:50:04.680 I/cdk     (32175): get_unissued_mint_quotes;
+10-23 20:50:04.680 I/cdk     (32175): get_melt_quotes;
+10-23 20:50:09.684 I/cdk     (32175): get_unissued_mint_quotes;
+10-23 20:50:09.695 I/cdk     (32175): get_wallet; mint_url=MintUrl("https://testnut.cashu.space") unit=Sat
+10-23 20:50:09.698 I/cdk     (32175): list_transactions; mint_url=Some(MintUrl("https://testnut.cashu.space")) direction=Some(Incoming) unit=Some(Sat)
+10-23 20:50:09.702 I/cdk     (32175): list_transactions; mint_url=Some(MintUrl("https://testnut.cashu.space")) direction=Some(Outgoing) unit=Some(Sat)
+10-23 20:50:09.704 I/cdk     (32175): get_wallet; mint_url=MintUrl("https://testnut.cashu.space") unit=Usd
+10-23 20:50:09.706 I/cdk     (32175): get_unissued_mint_quotes;
+10-23 20:50:09.708 I/cdk     (32175): get_melt_quotes;
+10-23 20:50:14.716 I/cdk     (32175): get_unissued_mint_quotes;
+10-23 20:50:14.725 I/cdk     (32175): get_wallet; mint_url=MintUrl("https://testnut.cashu.space") unit=Sat
+10-23 20:50:14.732 I/cdk     (32175): list_transactions; mint_url=Some(MintUrl("https://testnut.cashu.space")) direction=Some(Incoming) unit=Some(Sat)
+10-23 20:50:14.735 I/cdk     (32175): list_transactions; mint_url=Some(MintUrl("https://testnut.cashu.space")) direction=Some(Outgoing) unit=Some(Sat)
+10-23 20:50:14.737 I/cdk     (32175): get_wallet; mint_url=MintUrl("https://testnut.cashu.space") unit=Usd
+10-23 20:50:14.740 I/cdk     (32175): get_unissued_mint_quotes;
+10-23 20:50:14.740 I/cdk     (32175): get_melt_quotes;
+10-23 20:50:19.744 I/cdk     (32175): get_unissued_mint_quotes;
+10-23 20:50:19.751 I/cdk     (32175): get_wallet; mint_url=MintUrl("https://testnut.cashu.space") unit=Sat
+10-23 20:50:19.760 I/cdk     (32175): list_transactions; mint_url=Some(MintUrl("https://testnut.cashu.space")) direction=Some(Incoming) unit=Some(Sat)
+10-23 20:50:19.763 I/cdk     (32175): list_transactions; mint_url=Some(MintUrl("https://testnut.cashu.space")) direction=Some(Outgoing) unit=Some(Sat)
+10-23 20:50:19.766 I/cdk     (32175): get_wallet; mint_url=MintUrl("https://testnut.cashu.space") unit=Usd
+10-23 20:50:19.767 I/cdk     (32175): get_unissued_mint_quotes;
+10-23 20:50:19.769 I/cdk     (32175): get_melt_quotes;
+10-23 20:50:24.781 I/cdk     (32175): get_unissued_mint_quotes;
+10-23 20:50:24.788 I/cdk     (32175): get_wallet; mint_url=MintUrl("https://testnut.cashu.space") unit=Sat
+10-23 20:50:24.790 I/cdk     (32175): list_transactions; mint_url=Some(MintUrl("https://testnut.cashu.space")) direction=Some(Incoming) unit=Some(Sat)
+10-23 20:50:24.794 I/cdk     (32175): list_transactions; mint_url=Some(MintUrl("https://testnut.cashu.space")) direction=Some(Outgoing) unit=Some(Sat)
+10-23 20:50:24.796 I/cdk     (32175): get_wallet; mint_url=MintUrl("https://testnut.cashu.space") unit=Usd
+10-23 20:50:24.801 I/cdk     (32175): get_unissued_mint_quotes;
+10-23 20:50:24.803 I/cdk     (32175): get_melt_quotes;

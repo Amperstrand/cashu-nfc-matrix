@@ -87,6 +87,10 @@ def acquire_places(names: list[str], why: str, timeout_s: float = 120.0):
         for name in names:
             while True:
                 r = sh(LABGRID + ["-p", name, "acquire"], timeout=timeout_s)
+                if "already acquired" in (r.stdout + r.stderr):
+                    # our own session's hold (parent pre-held for us)
+                    held_self.append(name)
+                    break
                 if r.returncode == 0:
                     sh(LABGRID + ["-p", name, "set-comment",
                                   f"cashu-nfc-matrix hil ({why})"])

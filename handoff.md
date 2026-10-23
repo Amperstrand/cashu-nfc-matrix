@@ -326,3 +326,16 @@
   NoCard: the m5stick body sits BETWEEN phone and ACR and kills coupling.
   Owner action: phone DIRECTLY on the ACR antenna; stick beside it.
   Documented in docs/geometry.md.
+
+## 2026-10-23 ~22:1x — close-out items
+
+- ACR RF stage verdict: DEAD (phone side triple-verified armed+unlocked+
+  foregrounded; ~11 min total polling across placements = NoCard; USB
+  re-enumerated 21:03). RECOVERY = physical USB replug of the ACR
+  (documented cure for this wedge class) — owner action pending. T5[ACR]
+  + crosstalk cells blocked on it.
+- apks banked: /root/src/wallet-matrix-apks (98M); wifi_connect.py
+  re-pointed (repo drivers + WALLET_APK_DIR) — f4f1d57. /tmp/opencode/
+  wallet-matrix fully disposable (old checkout there is stale; repo lives
+  in ~/src/wallet-matrix).
+- plan --tier now accepts opportunistic (was missing from choices).

@@ -185,7 +185,9 @@ def extend_parser(sub: argparse._SubParsersAction) -> None:
     sp.add_argument("value")
     sp.set_defaults(fn=cmd_set)
     sp = sub.add_parser("plan", help="runnable set NOW + wall-time estimate")
-    sp.add_argument("--tier", choices=["core", "extended", "all"], default="all")
+    sp.add_argument("--tier",
+                    choices=["core", "extended", "opportunistic", "all"],
+                    default="all")
     sp.add_argument("--fake")
     sp.add_argument("--out", help="write plan json for `run`")
     sp.set_defaults(fn=cmd_plan)

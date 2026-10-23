@@ -1,0 +1,9 @@
+{"t": 0.0, "wall": "20:54:58", "kind": "run", "text": "start"}
+{"t": 0.0, "wall": "20:54:58", "kind": "follower", "text": "started wire-broker.log"}
+{"t": 0.0, "wall": "20:54:58", "kind": "follower", "text": "started phone-logcat.log"}
+{"t": 73.47, "wall": "20:56:12", "kind": "wallet", "text": "wipe done, arming 21 sat request"}
+{"t": 103.7, "wall": "20:56:42", "kind": "wallet", "text": "armed", "amount": 21}
+{"t": 104.03, "wall": "20:56:42", "kind": "still", "text": "armed-request: 123530B -> 205642-armed-request.png"}
+{"t": 114.81, "wall": "20:56:53", "kind": "nfc", "text": "field granted; payer connecting via ACR1252"}
+{"t": 129.91, "wall": "20:57:08", "kind": "run", "text": "finish", "summary": "FAILURES PRESENT; footage in /root/src/wallet-matrix/results/hil-20261023-205458"}
+{"t": 130.26, "wall": "20:57:08", "kind": "still", "text": "run-terminal: 123232B -> 205708-run-terminal.png"}

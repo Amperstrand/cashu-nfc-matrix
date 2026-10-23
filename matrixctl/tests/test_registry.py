@@ -23,7 +23,10 @@ def test_plan_blocks_on_c3_duty(facts):
     facts.write_text("phone: {at: nucula-coil}\nboards: {c3: bolty}\n")
     p = reg.plan(str(FIX / "bench-a.json"), "core")
     assert p["runnable"] == []
-    assert all("c3 duty" in b["blocked"] for b in p["blocked"])
+    blocked = {b["cell"]: b["blocked"] for b in p["blocked"]}
+    assert "c3 duty" in blocked["cashu_me-nucula-read"]
+    assert "c3 duty" in blocked["cashu_me-nucula-payment"]
+    assert "phone at" in blocked["cashu_me-m5stick-read"]  # geometry, not duty
 
 
 def test_plan_runs_when_duty_and_geometry_align(facts):

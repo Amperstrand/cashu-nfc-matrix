@@ -305,3 +305,14 @@
   pre-steps (bench-state becomes a CI artifact + the human directive prints
   in every run log). 11 plain tests green.
 - Tier tuning = registry.yaml data only; runner code untouched.
+
+## 2026-10-23 ~21:1x — OWNER NOTICE folded in: NTAG424 tag ON the c3 board
+
+- Physical NTAG424 now sits on nucula-c3 (bolty fw window). Attribution
+  rule + ATR pins recorded in bench/PROTOCOL.md; cards ledger live
+  (matrixctl set card.<label> <position>; card.ntag424-owner-placed ->
+  nucula-board); registry gained opportunistic cell ntag424-read
+  (boltcard-class target, no phone needed, coordinate ntag424-delta).
+- Lanes notified via herdr (w0:pP ntag424-delta + w16:p8 nucula-verify).
+- Concurrent: T5[ACR1252] rerun in flight (first attempt's mint step
+  failed transiently — manual mint minted fine).

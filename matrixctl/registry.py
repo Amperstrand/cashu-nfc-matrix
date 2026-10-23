@@ -58,6 +58,8 @@ def cmd_set(args: argparse.Namespace) -> int:
             print(f"c3.duty must be one of {C3_DUTY_VALID}")
             return 2
         facts.setdefault("boards", {})["c3"] = value
+    elif fact.startswith("card."):
+        facts.setdefault("cards", {})[fact[5:]] = value
     elif fact == "network.bench-ap-egress":
         facts.setdefault("network", {})["bench_ap_egress"] = value
     else:

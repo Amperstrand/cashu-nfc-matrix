@@ -120,3 +120,17 @@ the NDEF Type-4 file image (2-byte NLEN prefix + single NDEF record):
   pcscd journal = check `fuser` FIRST, pcscd restart second.
 - boltcard-hce (UI-less HCE service): SELECT AID answered 6400 then silent
   when its service is not armed — do not treat as reader failure.
+
+## Physical-tag attribution (2026-10-23, owner notice)
+
+A physical NTAG424 tag sits ON the nucula-c3 board (bolty firmware window).
+Any reader brought near that board sees an EXTRA ISO-DEP/NTAG presence:
+
+- attribute detections by UID/ATR BEFORE calling a peer 'the phone's HCE'
+  (phone HCE ATR: 3b 80 81 31 fe 45 8b when coupled via PN7160;
+  3B 88 80 01 00 00 00 80 81 71 00 79 when routed via ACR);
+- probe evidence should record tag presence so CI diffs don't misread it
+  as a new peer — the tag's UID lands in bench-facts.yaml cards ledger
+  (`matrixctl set card.<label> nucula-board`) once read;
+- it is a real boltcard-class target for reader-mode cells that do not
+  need the phone (registry: ntag424-read, coordinate with ntag424-delta).

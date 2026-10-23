@@ -85,3 +85,10 @@ cells:
     value: "contact-reader sanity (CardMan 3121)"
     max_age_d: null
     suite: "manual: any contact card + CardMan reader"
+  ntag424-read:
+    requires: {phone_at: off-bench}
+    tier: opportunistic
+    cost: {wall_min: 2, wedge: none}
+    value: "boltcard-class physical target (owner-placed NTAG424 on c3)"
+    max_age_d: null
+    suite: "manual: reader-mode UID/SUN read of the c3-board tag (coordinate with ntag424-delta lane)"

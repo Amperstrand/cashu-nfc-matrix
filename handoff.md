@@ -270,3 +270,19 @@
   T5/T2 runs, fwbuild/fwflash logs) — /tmp/opencode/wallet-matrix is now
   disposable for the ccid-tooling migration/prune.
 - Plain pytest: 16 skipped (hil-gated) + 2 render/geometry tests pass.
+
+## 2026-10-23 ~20:15 — AUTOMATION PLAN step 1 LANDED (7b2c1f0)
+
+- NOTE: /root/src/wallet-matrix-automation-plan.md referenced by the owner
+  directive DOES NOT EXIST on this host (searched /root/src) — implemented
+  from the inline spec in the directive. If the file surfaces, diff against
+  it.
+- matrixctl/ package: survey subcommand (python3 -m matrixctl survey).
+  Probes: adb phone state+wifi, pcscd readers, labgrid places, c3 FWID
+  (broker-journal banner heuristic). bench-state.yaml written + state/
+  surveys history; deltas printed vs previous. Fixture-driven dev mode
+  (--fake) — no hardware (bench contended by bolty). 2 plain tests green.
+- Checkout moved: /root/src/wallet-matrix (post-migration; /tmp tree gone).
+- NEXT: step 2 cell registry (requires/tier/cost/value/max-age, generalize
+  bench/geometry.py), then 'next' ranking, then status/README + geometry
+  docs + CI wiring.

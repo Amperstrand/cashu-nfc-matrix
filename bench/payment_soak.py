@@ -54,6 +54,11 @@ def main() -> int:
             if not d.is_armed():
                 st = d.create_request(AMOUNT)
                 assert "Ask the sender" in st, f"arm failed: {st!r}"
+            # rebuild payer per cycle: a pcscd restart (grant/recovery)
+            # invalidates any cached reader objects in this long-lived
+            # process ("Unknown reader specified" / RPC transport errors)
+            from bench import probe_acr
+            probe_acr._READER_CACHE.clear()
             p = Type4Payer(READER)
             t1 = time.time()
             p.connect()

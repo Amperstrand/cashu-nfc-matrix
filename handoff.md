@@ -166,3 +166,18 @@
 - Perf verdict one-liner: constant 400ms/APDU = 2x200ms NCI collect rounds +
   credit gate in exchange(); fix = harvest-before-sleep, expected effect
   ~26x on writes (21s -> <2s for a 2.7KB token).
+
+## 2026-10-23 midday — local-mint T5 blocked by WALLET HTTPS-ONLY rule
+
+- Tested with hardware as-is: T5[Nucula] on default testnut GREEN (3:09) after
+  hardening wipe() (mint-presence verify + 2x retry + explicit error).
+- Local mint chain: phone REACHES 192.168.13.208 (ping ok, no AP isolation),
+  adapter serves fine — but cashu.me REJECTS http:// mints at the URL
+  validation gate ("Enter a valid HTTPS mint URL"). NFC/reader stack is NOT
+  the blocker; TLS in front of :3338 is the only missing piece.
+- Owner options: (a) nodns.shop record + DNS-01 cert -> serve TLS on LAN with
+  A record pointing at 192.168.13.208; (b) router :443 forward to .208 +
+  HTTP-01; (c) accept testnut as the wallet-side mint (current default).
+- m5stick: foreign python3 holder GONE, but GemPC init still fails after
+  pcscd restart — stick remains in console mode; needs its lane's reader-mode
+  switch or a replug. Reader not enumerable until then.

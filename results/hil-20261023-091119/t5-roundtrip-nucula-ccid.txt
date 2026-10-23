@@ -1,0 +1,1 @@
+reader=Nucula CCID amount=21 credited=20 write_s=22.1 chunks=53 bytes=2734

@@ -158,7 +158,9 @@ def main(argv: list[str] | None = None) -> int:
     sp.add_argument("--serial", default=PHONE_SERIAL_DEFAULT)
     sp.set_defaults(fn=cmd_survey)
     from .registry import extend_parser  # noqa: E402
+    from .next import extend as _extend_next
     extend_parser(sub)
+    _extend_next(sub)
     args = ap.parse_args(argv)
     return args.fn(args)
 

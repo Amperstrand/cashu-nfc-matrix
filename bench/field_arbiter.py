@@ -150,6 +150,15 @@ def _grant_locked(owner: str) -> None:
     if owner == "acr":
         _acr_bind(True)
         _broker(False)
+        # bench recipe (2026-10-24): a freshly-reset/replugged ACR sits
+        # USB-UNCONFIGURED and pcscd's ccid silently skips it (no error,
+        # reader just absent). Claim it first, THEN restart pcscd.
+        try:
+            import usb.core as _u
+            for d in _u.find(find_all=True, idVendor=0x072F):
+                d.set_configuration()
+        except Exception:
+            pass
         _pcscd_restart()
     elif owner == "nucula":
         _acr_bind(False)

@@ -365,3 +365,17 @@
   alive and the phone's HCE radio is the suspect (then: phone reboot or
   NFC toggle). Still NoCard = ACR RF stage dead for good -> reader
   retirement / RMA; ACR matrix cells park as hardware-gated.
+
+## 2026-10-24 ~07:3x — /tmp reclaim survived; tier-driven CI VALIDATED GREEN
+
+- /tmp/opencode/wallet-matrix reclaimed: zero loss (repo at ~/src/wallet-matrix
+  @1d6cfbe+; apks banked; wifi_connect re-pointed — all yesterday).
+- CI smoke dispatch 40073406149 exposed the design flaw: workflow ran ALL
+  suites regardless of plan (legacy non-gated ACR tests went red on a bench
+  where 0 cells are runnable). FIXED per plan §5: smoke is plan-gated (0
+  runnable => survey-only GREEN with junit placeholder); legacy T0/T2-ACR
+  tests geometry-gated; T0 import-order fix. Second dispatch: GREEN.
+- Smoke on the CURRENT bench = survey-only by design; the moment facts
+  change (c3 back on ccid, or phone+m5stick geometry), the same dispatch
+  runs real cells. Loose ends: ACR bank-card discriminator + c3 CCID
+  return (both owner/lane-gated).

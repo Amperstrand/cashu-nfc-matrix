@@ -379,3 +379,17 @@
   change (c3 back on ccid, or phone+m5stick geometry), the same dispatch
   runs real cells. Loose ends: ACR bank-card discriminator + c3 CCID
   return (both owner/lane-gated).
+
+## 2026-10-24 ~08:0x — WINDOW CLOSE: automation surface COMPLETE + validated
+
+- matrixctl run executes plans for real: PHONE_AT plumbing from facts,
+  per-cell results written back into the plan json, soak env handling,
+  --yes hardware gate. 9/9 + 11 local tests green.
+- CI: plan-gated smoke GREEN twice; bench-state.yaml + plan.json land as
+  run artifacts (validated in dispatch after aa18f87).
+- README matrixctl quickstart added (owner-facing surface).
+- Commits this window: 1d6cfbe, 5844a0e, abee2e1, 18c0093, aa18f87, README,
+  T0 import fixes. All pushed to origin/main.
+- OPEN (owner/lane-gated only): ACR bank-card discriminator (RF verdict),
+  c3 return to CCID duty (then: flash merged #445 + core column + 0xD2
+  word-8 cross-check), m5stick serial release by bolty lane.

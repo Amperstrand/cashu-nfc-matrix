@@ -143,24 +143,43 @@ def cmd_plan(args: argparse.Namespace) -> int:
 def cmd_run(args: argparse.Namespace) -> int:
     plan_file = Path(args.plan)
     p = json.loads(plan_file.read_text())
+    if not p.get("runnable"):
+        print("plan has no runnable cells (survey-only run)")
+        return 0
+    env = dict(__import__("os").environ)
+    # physical facts flow to the suites: geometry gating + reader selection
+    facts = load_facts()
+    if facts.get("phone", {}).get("at"):
+        env["PHONE_AT"] = facts["phone"]["at"]
+    fails = 0
     for cell in p["runnable"]:
         suite = cell["suite"]
-        print(f"=== {cell['cell']}: {suite}")
+        print(f"=== {cell['cell']}: {suite}", flush=True)
         if args.dry_run:
             continue
         if not args.yes:
             print("refusing to touch hardware without --yes (dev: --dry-run)")
             return 2
-        if suite.startswith("SOAK_"):
+        if suite.startswith("SOAK_READER="):
             env_var, _, rest = suite.partition(" ")
-            cmd = ["/usr/bin/python3", rest]  # env applied below
-            r = _run(cmd, timeout=3600)
+            k, _, v = env_var.partition("=")
+            r = subprocess.run(["/usr/bin/python3", rest], env={**env, k: v},
+                               capture_output=True, text=True, timeout=3600)
         else:
-            r = _run(["/usr/bin/python3", "-m", "pytest", suite,
-                      "--hil", "--timeout=900", "--timeout-method=signal",
-                      "-m", "payer"], timeout=3600)
-        print(r.stdout[-2000:] if r.stdout else f"rc={r.returncode}")
-    return 0
+            r = subprocess.run(
+                ["/usr/bin/python3", "-m", "pytest", suite,
+                 "--hil", "--timeout=900", "--timeout-method=signal"],
+                env=env, capture_output=True, text=True, timeout=3600)
+        tail = (r.stdout or "")[-2000:]
+        print(tail if tail else f"rc={r.returncode}", flush=True)
+        if r.returncode != 0:
+            fails += 1
+            p.setdefault("results", {})[cell["cell"]] = "fail"
+        else:
+            p.setdefault("results", {})[cell["cell"]] = "ok"
+    plan_file.write_text(json.dumps(p, indent=1))  # results land in the plan
+    print(f"=== run complete: {len(p['runnable']) - fails} ok / {fails} fail")
+    return 1 if fails else 0
 
 
 # ---------------------------------------------------------------- verify

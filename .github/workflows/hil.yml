@@ -93,6 +93,16 @@ jobs:
           --junitxml=hil-junit.xml --timeout=7200 --timeout-method=signal
           -m soak
 
+      - name: bench-state + plan artifacts (survey outputs)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bench-state
+          path: |
+            bench-state.yaml
+            /tmp/plan.json
+          if-no-files-found: ignore
+
       - name: junit artifact
         if: always()
         uses: actions/upload-artifact@v4

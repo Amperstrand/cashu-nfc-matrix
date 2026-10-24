@@ -83,3 +83,19 @@ every cell cites its evidence file(s).
 |---|---|---|---|
 | cashu_me | ⚪ — ⚪ | 🔴 12 ok / 3 fail ⚪ (payment-soak-20261023-164625.jsonl) | 🔴 14 ok / 16 fail 🟢 (payment-soak-20261022-124818.jsonl) |
 <!-- matrix:end -->
+
+
+## matrixctl quickstart (the one CLI)
+
+```bash
+python3 -m matrixctl survey                 # probe bench, write bench-state.yaml, print deltas
+python3 -m matrixctl next                   # THE directive: one best physical action + why
+python3 -m matrixctl set phone.at acr-stack # record a physical action (facts, not config edits)
+python3 -m matrixctl plan --tier core       # runnable-now cells + wall estimate (--out for run)
+python3 -m matrixctl run plan.json --dry-run  # print; --yes executes through bench discipline
+python3 -m matrixctl verify-state           # mid-run geometry assertion
+```
+
+CI (`hil-nfc-matrix` stage=smoke|full) = survey + plan + plan-gated run;
+bench-state.yaml + plan.json land as run artifacts. Tiers/max-ages are
+registry DATA (matrixctl/registry.yaml) — tune there, never in code.

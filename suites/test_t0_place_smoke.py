@@ -1,3 +1,4 @@
+import pytest
 """T0 — place smoke: the bench can run a wallet session at all.
 
 Requires --hil. Fast; run before any wallet driving.

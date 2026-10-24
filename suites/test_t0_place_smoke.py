@@ -30,6 +30,8 @@ def test_phone_unlocked_screenon(phone_place):
     assert "mWakefulness=Awake" in p.stdout, "phone asleep"
 
 
+@pytest.mark.skipif(__import__("bench.geometry", fromlist=["geometry"]).phone_at() not in ("unknown", "acr-stack"),
+                    reason="ACR cell: phone not at acr-stack (reader may be parked/unbound)")
 def test_acr_reader_in_pcscd(acr_place):
     from smartcard.System import readers
 

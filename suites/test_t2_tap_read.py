@@ -40,6 +40,8 @@ def _probe_with_retries(subst: str, tries: int = 4, wedged_s: float = 45.0):
 
 
 @pytest.mark.parametrize("amount", [21, 64])
+@pytest.mark.skipif(__import__("bench.geometry", fromlist=["geometry"]).phone_at() not in ("unknown", "acr-stack"),
+                    reason="legacy ACR cell: phone not declared at acr-stack")
 def test_cashu_me_request_over_acr(cashu_me, acr_place, evidence_dir, amount):
     st = cashu_me.create_request(amount)
     assert "Ask the sender" in st, f"not armed: {st!r}"

@@ -65,7 +65,9 @@ cells:
     max_age_d: 30
     suite: "suites/test_t2_tap_read.py::test_numo_request"
   cashu_me-acr-payment:
-    requires: {phone_at: acr-stack, pcscd_reader: "ACR1252"}
+    # TOPOLOGY-BLOCKED: reader moved to ai-legion-small (ref-acr1252-small,
+    # ops #71) — remote-pcscd plumbing required (see issue on this repo)
+    requires: {phone_at: acr-stack, pcscd_reader: "ACR1252-NOT-ON-THIS-HOST"}
     tier: opportunistic
     cost: {wall_min: 3, wedge: none}
     value: "reference-reader parity column"

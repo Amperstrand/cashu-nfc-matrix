@@ -270,6 +270,16 @@ class CashuMeDriver:
         ui.launch_app(self.serial, self.package)
         import time as _t
         _t.sleep(3)
+        # 2026-10-30: the NFC AppChooser dialog can wedge foreground
+        # (found stuck during an unattended window) — HCE routing then
+        # answers nothing and every reader probe NoCards. Dismiss it the
+        # moment it is up; idempotent when absent.
+        for _ in range(2):
+            if "AppChooser" in ui.current_focus(self.serial):
+                ui.adb(self.serial, "shell", "input", "keyevent", "4")
+                _t.sleep(1.0)
+            else:
+                break
         self.ensure_onboarded(prefer_mint="https://testnut.cashu.space")
         txt = ui.screen_text(self.serial)
         if "Testnut" not in txt:

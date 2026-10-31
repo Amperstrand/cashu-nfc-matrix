@@ -102,6 +102,20 @@ def main() -> int:
         except Exception as e:
             rec["ok"] = False
             rec["error"] = repr(e)[:200]
+            # ccid-firmware-rs #444 (2026-10-31 re-analysis): the runs
+            # conflated three failure classes with different owners —
+            # rpc (reader-context death, pcscd-restart wedge), t1
+            # (card-level exchange loss, transient, latency-doubling
+            # precursors), tool (phone UI automation / NDEF parse).
+            # Tag every failure so the split exists without post-hoc
+            # repr-grepping.
+            s = repr(e)
+            rec["error_class"] = (
+                "rpc" if ("RPC transport" in s or "Unknown reader" in s)
+                else "t1" if ("transmit" in s.lower() or "NoCard" in s)
+                else "tool" if ("adb" in s or "uiautomator" in s
+                                or "unsupported record" in s)
+                else "other")
             fail += 1
             try:  # recovery: wipe + fresh setup
                 d.wipe()

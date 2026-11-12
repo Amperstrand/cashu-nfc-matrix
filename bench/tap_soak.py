@@ -15,6 +15,7 @@ import time
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from bench.error_class import classify_error  # noqa: E402
 from bench.probe_acr import read_ndef_request  # noqa: E402
 from drivers import ui  # noqa: E402
 from drivers.cashu_me import CashuMeDriver  # noqa: E402
@@ -46,6 +47,10 @@ def soak(cycles: int, base_amount: int, out_path: str) -> int:
                         raise RuntimeError(f"not armed after retry: {st!r}")
                 except Exception as e2:
                     rec["arm_error"] = repr(e2)[:200]
+                    # Arm failures are phone-side (adb/UI/app) by
+                    # construction — but classify anyway so the JSONL
+                    # schema is uniform across failure sites.
+                    rec["arm_error_class"] = classify_error(e2)
             if "arm_error" not in rec:
                 rec["arm_s"] = round(time.monotonic() - t0, 2)
                 rec["nfc_status"] = st if isinstance(st, str) else ""
@@ -82,7 +87,18 @@ def soak(cycles: int, base_amount: int, out_path: str) -> int:
                 fail += 0 if good else 1
             else:
                 rec["ok"] = False
-                rec["read_error"] = (res or {}).get("parse_error") or "read failed"
+                last_err = (res or {}).get("parse_error") or "read failed"
+                # Retry loop may have logged the underlying exception in
+                # read_retry_<n> — classify the LAST one seen so the
+                # owner split (rpc/t1/tool) exists for reads too.
+                last_retry = None
+                for attempt in range(4):
+                    k = f"read_retry_{attempt}"
+                    if k in rec:
+                        last_retry = rec[k]
+                rec["read_error"] = last_err
+                rec["read_error_class"] = classify_error(
+                    last_retry if last_retry is not None else last_err)
                 fail += 1
             fh.write(json.dumps(rec) + "\n"); fh.flush()
             print(json.dumps({k: rec.get(k) for k in ("cycle", "amount", "ok", "arm_s", "connect_s", "read_s", "cycle_total_s", "read_error", "read_retry_0")}), flush=True)

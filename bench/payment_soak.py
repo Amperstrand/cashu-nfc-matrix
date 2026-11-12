@@ -19,6 +19,7 @@ import time
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from bench.error_class import classify_error  # noqa: E402
 from bench.field_arbiter import grant  # noqa: E402
 from bench.payer import Type4Payer  # noqa: E402
 from drivers import ui  # noqa: E402
@@ -108,14 +109,9 @@ def main() -> int:
             # (card-level exchange loss, transient, latency-doubling
             # precursors), tool (phone UI automation / NDEF parse).
             # Tag every failure so the split exists without post-hoc
-            # repr-grepping.
-            s = repr(e)
-            rec["error_class"] = (
-                "rpc" if ("RPC transport" in s or "Unknown reader" in s)
-                else "t1" if ("transmit" in s.lower() or "NoCard" in s)
-                else "tool" if ("adb" in s or "uiautomator" in s
-                                or "unsupported record" in s)
-                else "other")
+            # repr-grepping. Classifier shared with tap_soak
+            # (bench/error_class.py).
+            rec["error_class"] = classify_error(e)
             fail += 1
             try:  # recovery: wipe + fresh setup
                 d.wipe()

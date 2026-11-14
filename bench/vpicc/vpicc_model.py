@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-# VENDORED from Amperstrand/bolty-rs tools/hil/difftest/vpicc_model.py @ 03f4358
-# (rung 1: stateful pre-auth model, 57/57 golden-exact upstream; read-window
-# file data is INJECTABLE since upstream feat/vpicc-ndef-injection — serve
-# your own NDEF via ModelVpicc(read_window_content=...)). Re-vendor with: cp
-# + this header; upstream is the source. LOCK pins the sha256.
+# VENDORED from Amperstrand/bolty-rs tools/hil/difftest/vpicc_model.py @ 7c254a2
+# (rung 1: stateful pre-auth model; read-window injection + the plain-read
+# file model (ndef_file=) for generic Type-4 ladders, upstream #298/#299).
+# Re-vendor with: cp + this header; upstream is the source. LOCK pins sha256.
 
 #!/usr/bin/env python3
 """vpicc_model — stateful pre-auth NTAG424 model (rung 1 of the design).
@@ -80,15 +79,29 @@ class Ntag424State:
     benches inject their own NDEF (e.g. a cashu request record) so the
     model can stand in for THEIR card — behavior stays computed, only
     FILE DATA is data (the design's own rule).
+
+    ndef_file: OPTIONAL plain-read file model. When set (raw NDEF
+    message bytes, no length prefix), READ BINARY becomes offset-aware
+    against a virtual file set {E103: standard CC, E104: len+ndef} —
+    a generic Type-4 reader ladder (SELECT AID → SELECT CC → READ CC →
+    SELECT NDEF → READ NDEF) reads the injected message like real
+    silicon, within the same READ_BUDGET. Default None = the golden
+    card's empirical quirks exactly (offsets ignored, canned window,
+    0x99 wall) — the 57/57 gate pins that path unchanged.
     """
 
-    def __init__(self, read_window_content: bytes | None = None) -> None:
+    CC_BYTES = bytes.fromhex("000F1020003B00340600" + "00" * 5)[:15]
+    NDEF_FID = bytes.fromhex("E104")
+
+    def __init__(self, read_window_content: bytes | None = None,
+                 ndef_file: bytes | None = None) -> None:
         self.selected: str | None = None
         self.reads_served = 0
         self.read_window: bytes = (
             READ_WINDOW_CONTENT if read_window_content is None
             else read_window_content
         )
+        self.ndef_file = ndef_file
 
 
 def answer(state: Ntag424State, capdu: bytes) -> bytes:
@@ -149,6 +162,20 @@ def answer(state: Ntag424State, capdu: bytes) -> bytes:
             return SW["notfound"]
         if state.reads_served >= READ_BUDGET:
             return SW["cond"]
+        if state.ndef_file is not None:
+            # Plain-read file model: offset-aware serving of the virtual
+            # file set, selected-file scoped (CC window pre-select too —
+            # generic ladders read CC after SELECT E103).
+            off = ((p1 & 0x3F) << 8) | p2  # 15-bit per Type-4 short-LE reads
+            if state.selected == "NDEF":
+                content = len(state.ndef_file).to_bytes(2, "big") + state.ndef_file
+            else:
+                content = Ntag424State.CC_BYTES
+            state.reads_served += 1
+            window = content[off:off + le]
+            if not window:
+                return SW["notfound"]  # past EOF
+            return window + SW["ok"]
         state.reads_served += 1
         return state.read_window[:le] + SW["ok"]
 
@@ -163,8 +190,9 @@ class ModelVpicc:
     the pre-auth rules. An engine per ModelVpicc = one handshake context.
     """
 
-    def __init__(self, read_window_content: bytes | None = None) -> None:
-        self.state = Ntag424State(read_window_content)
+    def __init__(self, read_window_content: bytes | None = None,
+                 ndef_file: bytes | None = None) -> None:
+        self.state = Ntag424State(read_window_content, ndef_file)
         try:
             from vpicc_model_auth import AuthEngine
             self.auth = AuthEngine()

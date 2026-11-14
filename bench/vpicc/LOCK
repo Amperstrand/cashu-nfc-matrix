@@ -1,0 +1,11 @@
+# vpicc reference-lock (bolty-rs #282 pattern)
+#
+# The vendored stateful pre-auth NTAG424 model + its golden capture are the
+# oracle for hardware-free reader testing. suites/test_vpicc_model.py
+# self-asserts the sha256s below AND runs the golden check (57/57
+# byte-exact). Provenance: Amperstrand/bolty-rs tools/hil/difftest @ the
+# commit recorded in the vendor headers; re-vendor deliberately and refresh
+# these lines in the same commit.
+
+vpicc_model.py sha256: ed52fb5af121edb49bc08d48d5ef5f9610024a3b63684f8d338d052bdce97e12
+golden_acr1252.json sha256: f95148aec97e558de45947ce225bfed9e17b90302a833a20d818c3e29626118c

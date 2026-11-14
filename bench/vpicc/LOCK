@@ -7,7 +7,7 @@
 # commit recorded in the vendor headers; re-vendor deliberately and refresh
 # these lines in the same commit.
 
-vpicc_model.py sha256: 022f265f78c8ce428b9d16b14fd043425b74e8ec5bcf821169925ca4c77d8ecc
+vpicc_model.py sha256: f01e6dbde99a6a5ecd11ba78f10b35d4bbe7d4ff07e1239cb29750a8eaca2f68
 golden_acr1252.json sha256: f95148aec97e558de45947ce225bfed9e17b90302a833a20d818c3e29626118c
 vpicc_model_auth.py sha256: 4309c1d21f60d11d1ad15f5badc5d4469edbab1b37187c5b5ed33ee1aced194e
 vpicc_golden.py sha256: 59aa8d11c993472b16a2729b9e285aa08cf6144963e6a1424a40d002750a01f0

@@ -36,7 +36,19 @@ def _slot_present() -> bool:
         names = [str(r) for r in readers()]
     except Exception:  # noqa: BLE001
         return False
-    return any("vPICC table card" in n and "00 00" in n for n in names)
+    if not any("vPICC table card" in n and "00 00" in n for n in names):
+        return False
+    # Concurrent suite runs would fight over the vpcd slot port — skip
+    # gracefully instead of failing on a bind error.
+    import socket
+    s = socket.socket()
+    try:
+        s.bind(("127.0.0.1", VPICC_PORT))
+    except OSError:
+        return False
+    finally:
+        s.close()
+    return True
 
 
 pytestmark = pytest.mark.skipif(

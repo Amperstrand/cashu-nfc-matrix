@@ -23,5 +23,8 @@ docs/cross-project-infra-audit-2026-11-12.md follow-up #5.
 - `LOCK` — reference-lock + re-vendor procedure
 - `suites/test_vpicc_model.py` — pytest wrapper (both assertions)
 
-vpcd wiring (model served as a virtual card via pcscd's vpcd driver)
-is bench-host work and deliberately NOT part of this drop.
+vpcd wiring: `vpicc_golden.py` (vendored) + `suites/test_vpicc_live.py`
+— the model served as a REAL virtual card through pcscd's vpcd driver.
+Requires the bench-host "vPICC table card" slot (127.0.0.1:35970);
+skips gracefully elsewhere. VERIFIED LIVE on ai-legion 2026-11-14:
+57/57 byte-exact through the full pcscd -> vpcd -> model stack.

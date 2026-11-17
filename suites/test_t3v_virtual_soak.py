@@ -59,3 +59,23 @@ def test_virtual_soak_bad_read_classifies_as_tool():
         # neighbors unaffected — fresh card per cycle absorbs the fault
         assert rows[0].get("ok") is True and rows[2].get("ok") is True
         assert rc != 0  # the injected failure is visible, never hidden
+
+
+def test_virtual_soak_cashub_long_ndef_fits_budget():
+    """SESSION J pin: 374-char cashuB (long-form record) reads through the
+    MLe single-window ladder in EXACTLY the READ_BUDGET of 3 content reads
+    (1 CC + 2 x Le=0xFE) — the legacy 0x20 ladder hits the 6985 wall here
+    (see suites/test_vpicc_ladder.py for the offline pin of that side)."""
+    with tempfile.TemporaryDirectory() as d:
+        out = str(Path(d) / "v-cashub.jsonl")
+        rc = soak_virtual(cycles=2, base_amount=50, out_path=out,
+                          ndef_kind="cashuB")
+        rows = _rows(out)
+        assert rc == 0 and len(rows) == 2, rows
+        for r in rows:
+            assert r.get("ok") and r.get("mode") == "virtual", r
+            assert r.get("ndef_kind") == "cashuB" and r.get("ladder") == "mle", r
+            assert r["reads"] == {"cc": 1, "ndef_windows": 2, "total": 3}, r
+            assert r.get("token_len") == 374, r  # the charter's long-form class
+            assert r.get("ndef_len") == 386, r   # 2 NLEN + 374 payload + header
+            assert f"c={r['cycle']}" in r.get("cashu_memo", ""), r  # fresh token

@@ -50,7 +50,13 @@ def get_acr(subst: str = "ACR1252"):
 
 
 def read_ndef_request(subst: str = "ACR1252") -> dict:
-    """Connect + full Type-4 read; return parsed info (raises on hard failure)."""
+    """Connect + full Type-4 read; return parsed info (raises on hard failure).
+
+    LEGACY ladder: fixed 0x20 NDEF windows — the physical lane's
+    evidence-pinned read shape (SESSION C: exactly 3 reads at creqA sizes,
+    zero headroom). Do not change the emitted APDUs here; long payloads
+    (cashuB-class) that need more than 3 reads use read_ndef_request_mle.
+    """
     r = get_acr(subst)
     t0 = time.monotonic()
     c = r.createConnection()
@@ -108,6 +114,99 @@ def read_ndef_request(subst: str = "ACR1252") -> dict:
         out["ndef_text"] = text
         if text.startswith("creqA"):
             out["creq"] = decode_creq(text)
+        else:
+            out["creq_raw_prefix"] = text[:48]
+    except Exception as e:
+        out["parse_error"] = repr(e)
+    return out
+
+
+def read_ndef_request_mle(subst: str = "ACR1252") -> dict:
+    """Connect + Type-4 read with SINGLE-WINDOW reads (SESSION J ladder).
+
+    Same SELECT shape as read_ndef_request, but NDEF windows use
+    Le = min(MLe from the CC just read, 0xFE) instead of fixed 0x20 —
+    a cashuB-374 file (386B) reassembles in 1 CC read + 2 windows =
+    exactly READ_BUDGET (3) content reads where the legacy ladder needs
+    13 and hits the capture-pinned 6985 wall after read 3.
+
+    Le is clamped to 0xFE because the model (and the golden capture)
+    answers Le 0x00/0xFF with 6985 (malformed_le_zero/max) — the CC's
+    advertised MLe (0x2000 here) exceeds the card's own acceptance.
+
+    Physical-mode note: the physical lane keeps the legacy ladder; this
+    variant is the substitution-mode (vpcd) reader path (amperstrand-ops
+    #23 stop condition: never alter PHYSICAL-mode reads). Result carries
+    the reads breakdown as evidence.
+    """
+    r = get_acr(subst)
+    t0 = time.monotonic()
+    c = r.createConnection()
+    c.connect()
+    connect_s = time.monotonic() - t0
+    atr = " ".join(f"{b:02x}" for b in c.getATR())
+    proto = c.getProtocol()
+
+    def tx(apdu):
+        old = signal.signal(signal.SIGALRM, _alarm)
+        signal.alarm(15)
+        try:
+            d, s1, s2 = c.transmit(apdu, proto)
+            return bytes(d), s1, s2
+        finally:
+            signal.alarm(0)
+            signal.signal(signal.SIGALRM, old)
+
+    out = {"atr": atr, "connect_s": round(connect_s, 3), "ladder": "mle"}
+    reads = {"cc": 0, "ndef_windows": 0}
+    d, s1, s2 = tx([0x00, 0xA4, 0x04, 0x00, 0x07, 0xD2, 0x76, 0x00, 0x00, 0x85, 0x01, 0x01, 0x00])
+    out["select_aid_sw"] = f"{s1:02x}{s2:02x}"
+    if (s1, s2) != (0x90, 0x00):
+        return out
+    tx([0x00, 0xA4, 0x00, 0x0C, 0x02, 0xE1, 0x03])
+    d, s1, s2 = tx([0x00, 0xB0, 0x00, 0x00, 0x0F])
+    out["cc"] = d.hex()
+    if (s1, s2) != (0x90, 0x00) or len(d) < 15:
+        return out
+    reads["cc"] += 1
+    mle = int.from_bytes(d[3:5], "big")
+    le = max(1, min(mle, 0xFE))
+    out["cc_mle"] = mle
+    out["window_le"] = le
+    t1 = time.monotonic()
+    d, s1, s2 = tx([0x00, 0xA4, 0x00, 0x0C, 0x02, 0xE1, 0x04])
+    out["select_ndef_sw"] = f"{s1:02x}{s2:02x}"
+    if (s1, s2) != (0x90, 0x00):
+        return out
+    file = b""
+    off = 0
+    total = 1 << 20
+    while len(file) < total:
+        d, s1, s2 = tx([0x00, 0xB0, (off >> 8) & 0xFF, off & 0xFF, le])
+        if (s1, s2) != (0x90, 0x00) or not d:
+            out["budget_wall_sw"] = f"{s1:02x}{s2:02x}"
+            break
+        if off == 0 and len(d) >= 2:
+            total = ((d[0] << 8) | d[1]) + 2
+        file += bytes(d)
+        off += len(d)
+        reads["ndef_windows"] += 1
+    out["read_s"] = round(time.monotonic() - t1, 3)
+    out["reads"] = {**reads, "total": reads["cc"] + reads["ndef_windows"]}
+    out["ndef_hex"] = file.hex()
+    out["ndef_len"] = len(file)
+    try:
+        import os
+        import sys
+        sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        from bench.ndef import decode_cashu_token, decode_creq, parse_text_record
+
+        text = parse_text_record(file)
+        out["ndef_text"] = text
+        if text.startswith("creqA"):
+            out["creq"] = decode_creq(text)
+        elif text.startswith(("cashuA", "cashuB")):
+            out["cashu"] = decode_cashu_token(text)
         else:
             out["creq_raw_prefix"] = text[:48]
     except Exception as e:

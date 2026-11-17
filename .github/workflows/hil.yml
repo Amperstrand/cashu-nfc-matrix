@@ -15,15 +15,20 @@ on:
   workflow_dispatch:
     inputs:
       stage:
-        description: 'smoke | full | payment | soak'
+        description: 'smoke | full | payment | soak | virtual-soak'
         required: false
         default: 'full'
       soak_cycles:
-        description: 'cycles when stage=soak'
+        description: 'cycles when stage=soak or stage=virtual-soak'
         required: false
         default: '60'
   schedule:
     - cron: '37 1 * * *'   # disjoint from nucula fuzz (03:23) + hil (03:23)
+    # SESSION K: monthly virtual-soak evidence regeneration. 20:23 UTC on
+    # the 11th — hours off the 01:37 daily and 03:23 lanes (worst observed
+    # 01:37 tail ~6h15m ends ~07:52) so the single bench runner never
+    # queues behind them; vpcd-slot contention degrades to graceful skip.
+    - cron: '23 20 11 * *'
 
 permissions:
   contents: read
@@ -92,6 +97,76 @@ jobs:
           --soak-cycles "${{ inputs.soak_cycles || '60' }}"
           --junitxml=hil-junit.xml --timeout=7200 --timeout-method=signal
           -m soak
+
+      # SESSION K: substitution-mode soak on demand + monthly. Zero silicon:
+      # fresh vpicc model per cycle on the pcscd vpcd slot, no labgrid
+      # places, no ACR/phone (bench/vpicc/README.md). Slot absent or port
+      # busy => graceful skip (rc=0), never disturbs the pcscd domain.
+      - name: run virtual soak (substitution mode, vpcd slot only)
+        if: inputs.stage == 'virtual-soak' || github.event.schedule == '23 20 11 * *'
+        timeout-minutes: 20
+        run: |
+          set +e
+          /usr/bin/python3 bench/tap_soak.py --virtual \
+            --cycles "${{ inputs.soak_cycles || '100' }}" \
+            --out results/virtual-soak.jsonl
+          rc=$?
+          # junit-wrap per cycle (soak-stage shape): JSONL rows become
+          # testcases so a red cycle is visible in the hil-junit artifact;
+          # the JSONL itself rides the evidence artifact via results/.
+          /usr/bin/python3 - "$rc" results/virtual-soak.jsonl <<'PY'
+          import json, sys
+          from xml.sax.saxutils import quoteattr
+          rc = int(sys.argv[1])
+          rows = []
+          try:
+              rows = [json.loads(l) for l in open(sys.argv[2]) if l.strip()]
+          except FileNotFoundError:
+              pass
+          cases = []
+          for r in rows:
+              name = f"cycle-{r.get('cycle')}-amount-{r.get('amount')}"
+              if r.get("ok"):
+                  cases.append(f'<testcase classname="virtual-soak" name={quoteattr(name)}/>')
+              else:
+                  err = (r.get("read_error") or r.get("arm_error")
+                         or r.get("read_error_class") or r.get("arm_error_class")
+                         or "fail")
+                  cases.append(f'<testcase classname="virtual-soak" name={quoteattr(name)}>'
+                               f'<failure message={quoteattr(str(err))}/></testcase>')
+          if not rows and rc == 0:
+              cases.append('<testcase classname="virtual-soak" name="graceful-skip"/>')
+          with open("hil-junit.xml", "w") as fh:
+              fh.write('<testsuite name="virtual-soak" tests="%d">%s</testsuite>'
+                       % (len(cases), "".join(cases)))
+          print(f"junit-wrap: {len(cases)} cases (rc={rc}) -> hil-junit.xml")
+          PY
+          exit $rc
+
+      # failure-is-visible check (SESSION K): an injected unparseable NDEF
+      # must leave rc!=0 AND classify as read_error_class=tool (the
+      # suites/test_t3v_virtual_soak.py pin, asserted at workflow level).
+      - name: virtual soak bad-read visibility check (injected failure must be red)
+        if: inputs.stage == 'virtual-soak' || github.event.schedule == '23 20 11 * *'
+        timeout-minutes: 10
+        run: |
+          set +e
+          /usr/bin/python3 bench/tap_soak.py --virtual --cycles 3 --inject-bad-read 1 \
+            --out results/virtual-soak-inject.jsonl
+          rc=$?
+          if [ "$rc" -eq 0 ]; then
+            echo '::error::injected bad read was HIDDEN (rc=0) — failure-visibility regression'
+            exit 1
+          fi
+          /usr/bin/python3 - results/virtual-soak-inject.jsonl <<'PY'
+          import json, sys
+          rows = [json.loads(l) for l in open(sys.argv[1]) if l.strip()]
+          bad = [r for r in rows if r.get("injected") == "bad_ndef"]
+          assert len(bad) == 1, rows
+          assert bad[0].get("read_error_class") == "tool", bad[0]
+          assert rows[0].get("ok") is True and rows[2].get("ok") is True, rows
+          print("inject check: rc!=0, injected row classified tool, neighbors ok")
+          PY
 
       - name: bench-state + plan artifacts (survey outputs)
         if: always()

@@ -14,6 +14,10 @@ pinned facts are about the shipped code, not a re-implementation:
 3. the cliff is documented, not hidden: >508B NDEF files (text >496 chars;
    real-mint 2722-char tokens) exceed the budget under BOTH ladders — a
    finding for a future charter (budget re-pin is LOCK-gated).
+3b. SESSION M decision pin (amperstrand-ops #29): the real-mint class
+   (2715/2722 chars, text+binary) asserts the 6985 wall under BOTH
+   ladders — documented won't-carry; a budget raise requires NEW golden
+   capture evidence (hil), never code.
 4. physical-lane byte-identity: read_ndef_request emits only 0x20 NDEF
    windows (never Le>0x20) — the substitution-mode ladder cannot leak into
    the evidence-pinned physical read shape.
@@ -42,6 +46,7 @@ class FakeConn:
     def __init__(self, answerer: ModelVpicc) -> None:
         self.model = answerer
         self.apdus: list[bytes] = []
+        self.sws: list[tuple[int, int]] = []
 
     def connect(self):  # noqa: D102
         return None
@@ -59,6 +64,7 @@ class FakeConn:
             rapdu = self.model.answer(capdu)
         else:  # pragma: no cover — auth engine path unused here
             rapdu = self.model.answer(capdu)
+        self.sws.append((rapdu[-2], rapdu[-1]))
         return list(rapdu[:-2]), rapdu[-2], rapdu[-1]
 
 
@@ -76,6 +82,14 @@ def _run(monkeypatch, message_builder) -> tuple[dict, FakeConn]:
     fake = FakeReader(model)
     monkeypatch.setattr(probe_acr, "get_acr", lambda subst="": fake)
     return fake.conn.apdus
+
+
+def _run_msg(monkeypatch, message: bytes) -> FakeConn:
+    """Like _run but with raw NDEF message bytes (binary records too)."""
+    model = ModelVpicc(ndef_file=message)
+    fake = FakeReader(model)
+    monkeypatch.setattr(probe_acr, "get_acr", lambda subst="": fake)
+    return fake.conn
 
 
 def _ndef_read_apdus(apdus):
@@ -141,6 +155,48 @@ def test_mle_ladder_cliff_at_508b_files(monkeypatch, chars, wall):
         assert res["reads"]["total"] == 3  # budget consumed, file truncated
     else:
         assert "budget_wall_sw" not in res and res["reads"]["total"] == 3
+
+
+# --- 3b. real-mint cliff pin (SESSION M): 6985 under BOTH ladders ---------
+#
+# Decision artifact for amperstrand-ops #29: real-mint cashuB tokens
+# (2715/2722 chars observed) are documented WON'T-CARRY. READ_BUDGET=3 is
+# pinned by TWO independent golden captures (04C474FA967380 LOCK-pinned;
+# 04455FFA967380 upstream card2) — exactly 3 successful content reads,
+# no 4th in any capture — so raising the budget needs NEW physical
+# capture evidence (hil charter), not code. This test pins the cliff so
+# a "fix" that silently widens the budget or the windows fails HERE.
+
+_REAL_MINT = pytest.mark.parametrize("chars", [2715, 2722])
+_REAL_MINT_KIND = pytest.mark.parametrize("kind", ["text", "binary"])
+
+
+@_REAL_MINT
+@_REAL_MINT_KIND
+def test_real_mint_class_budget_wall_both_ladders(monkeypatch, chars, kind):
+    from bench.ndef import binary_type4_file
+
+    msg = (text_type4_file("x" * chars) if kind == "text"
+           else binary_type4_file(b"x" * chars))[2:]
+    file_len = len(msg) + 2
+    # exact min-reads at the widest accepted window (Le=0xFE): the class
+    # needs 1 CC + ceil(file/254) = 12 reads — 4x the budget.
+    assert 1 + -(-file_len // 254) == 12
+
+    # mle ladder: wall reported, budget consumed, file never completes
+    conn = _run_msg(monkeypatch, msg)
+    res = probe_acr.read_ndef_request_mle("fake")
+    assert res["budget_wall_sw"] == "6985"
+    assert res["reads"] == {"cc": 1, "ndef_windows": 2, "total": 3}
+    assert res["ndef_len"] < file_len  # 2 x 254B of 2727..2754B
+
+    # legacy ladder: 3 successful reads then the 4th READ BINARY = 6985
+    conn = _run_msg(monkeypatch, msg)
+    res = probe_acr.read_ndef_request("fake")
+    reads = _ndef_read_apdus(conn.apdus)
+    assert len(reads) == 4  # 1 CC + 2 NDEF windows + 1 refused
+    assert conn.sws[-1] == (0x69, 0x85)  # the 4th read's 6985 wall
+    assert res["ndef_len"] == 2 * 32  # truncated — never completed
 
 
 # --- 4. physical-lane byte-identity guard ---------------------------------

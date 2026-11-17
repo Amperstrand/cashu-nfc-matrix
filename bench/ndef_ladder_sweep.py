@@ -77,11 +77,50 @@ def run_ladder(ndef_message: bytes, window_le: int | None) -> dict:
             "reassembled_ok": bool(ok)}
 
 
+def real_mint_table() -> list[dict]:
+    """SESSION M: the real-mint cashuB class as a FIRST-CLASS artifact.
+
+    Observed real-mint cashuB token lengths: 2715 and 2722 chars (SESSION M
+    charter, amperstrand-ops #29). Exact min-reads at Le=0xFE (the widest
+    window the capture-pinned READ BINARY accepts):
+
+        file = 2 (NLEN) + NDEF message bytes
+        mle  min reads = 1 CC + ceil(file / 254)
+        legacy min reads = 1 CC + ceil(file / 32)
+
+    Measured against the model rule engine (run_ladder drives a FRESH
+    Ntag424State per ladder = one card session per re-tap), so 'wall' is
+    what the soak would actually see, not an estimate.
+    """
+    rows = []
+    for chars in (2715, 2722):
+        for kind, msg in (
+            ("text", text_type4_file("x" * chars)[2:]),
+            ("binary", binary_type4_file(b"x" * chars)[2:]),
+        ):
+            file_len = len(msg) + 2
+            mle_min = 1 + -(-file_len // 254)
+            leg_min = 1 + -(-file_len // 32)
+            mle = run_ladder(msg, window_le=0xFE)
+            legacy = run_ladder(msg, window_le=None)
+            rows.append({
+                "payload_chars": chars, "kind": kind, "file_len": file_len,
+                "mle_min_reads": mle_min, "mle_measured_reads": mle["total_reads"],
+                "mle_budget_wall_hit": mle["budget_wall_hit"],
+                "legacy_min_reads": leg_min,
+                "legacy_measured_reads": legacy["total_reads"],
+                "legacy_budget_wall_hit": legacy["budget_wall_hit"],
+                "reads_over_budget": max(mle_min, 3) - 3,
+                "carries_in_budget": mle_min <= 3 and not mle["budget_wall_hit"],
+            })
+    return rows
+
+
 def main() -> int:
     # creqA baseline (the SESSION C proven size) + the charter sweep 100..500,
     # the advertised cliff neighborhood, and the real-mint 2722-char class.
     lengths = [33, 100, 150, 200, 250, 255, 256, 300, 350, 374, 400, 450,
-               490, 494, 495, 496, 497, 500, 2722]
+               490, 494, 495, 496, 497, 500, 2715, 2722]
     rows = []
     for L in lengths:
         text = "x" * L
@@ -104,10 +143,12 @@ def main() -> int:
             rows.append({"payload_chars": L, "kind": kind, "legacy": legacy,
                          "mle": mle, "parse_ok": parsed_ok})
     out = {"ts": time.strftime("%Y%m%d-%H%M%S"), "read_budget": 3, "rows": rows,
+           "real_mint_class": real_mint_table(),
            "notes": {
                "legacy": "fixed 0x20 windows — probe_acr.read_ndef_request today (physical lane, untouched)",
                "mle": "single-window reads, Le = min(MLe from CC, 0xFE) — charter option (a)",
                "budget_rule": "READ_BUDGET=3 counts CC reads; 6985 wall after; fresh model per cycle = re-tap",
+               "real_mint_class": "SESSION M: observed real-mint cashuB lengths 2715/2722 — exact min-reads at Le=0xFE vs budget 3",
            }}
     path = os.path.join(os.path.dirname(__file__), "..", "results",
                         f"ndef-ladder-sweep-{out['ts']}.json")
@@ -124,6 +165,15 @@ def main() -> int:
                           f"{'ok' if x['completed'] and x['reassembled_ok'] else 'TRUNC':>5}")
         print(f"{r['payload_chars']:>5} {r['kind']:>6} {r['legacy']['file_len']:>5} | "
               f"{cell(r['legacy']):>18} | {cell(r['mle']):>18} | {r['parse_ok']}")
+    print(f"\nreal-mint cashuB class (SESSION M): min-reads at Le=0xFE vs READ_BUDGET=3")
+    print(f"{'chars':>5} {'kind':>6} {'file':>5} | {'mle min/meas':>12} {'wall':>4} | {'leg min':>7} {'wall':>4} | over carries")
+    for r in out["real_mint_class"]:
+        print(f"{r['payload_chars']:>5} {r['kind']:>6} {r['file_len']:>5} | "
+              f"{r['mle_min_reads']:>5}/{r['mle_measured_reads']:<6} "
+              f"{'YES' if r['mle_budget_wall_hit'] else 'no':>4} | "
+              f"{r['legacy_min_reads']:>7} "
+              f"{'YES' if r['legacy_budget_wall_hit'] else 'no':>4} | "
+              f"+{r['reads_over_budget']:<3} {'YES' if r['carries_in_budget'] else 'NO'}")
     print(f"-> {path}")
     return 0
 

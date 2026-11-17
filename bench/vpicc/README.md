@@ -94,3 +94,65 @@ reads NDEF windows with Le = min(MLe from CC, 0xFE):
   `suites/test_vpicc_ladder.py::test_legacy_ladder_never_widens_windows`).
   `tap_soak --virtual --ndef-kind=cashuB` is the only caller of the
   mle ladder; `--ndef-kind=creqA` (default) keeps the SESSION C shape.
+
+## Real-mint cashuB vs READ_BUDGET — the LOCK decision (SESSION M, 2026-11-17)
+
+**Decision: READ_BUDGET stays 3. Real-mint cashuB tokens (2715–2722
+chars observed) are documented WON'T-CARRY by the virtual soak; carrying
+them requires NEW physical capture evidence first** (hil charter filed —
+budget re-pin is LOCK-gated, and there is nothing to re-vendor: see the
+upstream check below). LOCK untouched; sha256s unchanged.
+
+### The numbers (evidence: `results/ndef-ladder-sweep-*.json`, `real_mint_class` block)
+
+Exact min-reads at the widest window the capture-pinned READ BINARY
+accepts (Le=0xFE): file = NLEN(2) + NDEF message; reads = 1 CC +
+ceil(file/254):
+
+| token | kind | file B | mle min reads | legacy min reads | budget 3 |
+|---|---|---|---|---|---|
+| 2715 | text | 2727 | **12** | 87 | +9 over, wall |
+| 2715 | binary | 2747 | **12** | 87 | +9 over, wall |
+| 2722 | text | 2734 | **12** | 87 | +9 over, wall |
+| 2722 | binary | 2754 | **12** | 88 | +9 over, wall |
+
+Measured through the model rule engine: BOTH ladders hit the 6985 wall
+after the 3rd successful content read (file truncated at 2 x 254B /
+2 x 32B). No window-splitting trick can help: 3 x 254B = 762B < 2727B,
+and even dropping the CC read (the ladder's MLe source) leaves
+3 x 254B < 2727B. The token class is 4x the budget at max window.
+
+### The re-pin fact base (from the golden captures)
+
+- LOCK-pinned golden (2026-08-29, card 04C474FA967380, ONE continuous
+  session): exactly 3 successful content reads in the entire capture —
+  `read_cc_full` (15B), `read_cc_partial` (4B), `read_no_select` (15B)
+  — then EVERY later READ BINARY answers 6985. The unconfounded wall
+  evidence is `stress_read_cc_10x` r0–r9 (valid Le=0x0F, all 6985
+  after the 3rd success); `malformed_le_zero`/`_max` are 6985 too but
+  dual-caused (the Le 0x00/0xFF rule). **No captured exchange anywhere
+  shows a 4th successful content read, nor a successful read after a
+  6985.**
+- Corroboration: upstream bolty-rs carries a SECOND capture
+  (`tools/hil/difftest/results/golden_acr1252_card2.json`, card
+  04455FFA967380, 2026-08-29 18:20, predates the 7c254a2 vendoring):
+  identical behavior — 3 successes (same test_ids), then 6985 for every
+  later read. Two independent NTAG424 cards, same budget = 3.
+- Upstream check (2026-11-17, bolty-rs @ 39bb080): `vpicc_model.py`,
+  `golden_acr1252.json`, `vpicc_model_auth.py`, `vpicc_golden.py` are
+  byte-identical to the 7c254a2 vendoring (vendored file = header +
+  upstream; LOCK sha256 f01e6dbd/f95148ae verified). `READ_BUDGET = 3`
+  unchanged. **No upstream re-pin exists to re-vendor.**
+- Nit (kept as-is: vendored file is sha-pinned): the vendored module
+  docstring's prose says "first 2 reads" while citing the 3 successful
+  test_ids; the executable rule and the golden both say exactly 3.
+
+### What would change the decision
+
+Only NEW golden capture evidence of a card serving >3 successful
+content reads per session (or an upstream LOCK re-pin, which does not
+exist): the hil capture charter covers the physical session. The cliff
+itself is now TEST-PINNED —
+`suites/test_vpicc_ladder.py::test_real_mint_class_budget_wall_both_ladders`
+asserts the 2715/2722 class hits the 6985 wall under BOTH ladders, so a
+budget raise or window widening without new evidence fails CI.

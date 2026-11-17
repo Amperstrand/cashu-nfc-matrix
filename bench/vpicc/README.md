@@ -68,3 +68,29 @@ One shared model instance across cycles hits the 6985 wall after the
 first cycle. If a future ladder needs >3 reads per cycle, that is a
 finding to document — do NOT raise READ_BUDGET without a golden
 re-pin (`LOCK`, the reference-lock + re-vendor procedure).
+
+## Long NDEF vs READ_BUDGET — the MLe ladder (SESSION J, 2026-11-17)
+
+Can the substitution soak carry LONG NDEF (cashuB 374-char tokens,
+long-form records)? **Yes — via wider windows, not a bigger budget.**
+`bench/probe_acr.py::read_ndef_request_mle` keeps the SELECT shape but
+reads NDEF windows with Le = min(MLe from CC, 0xFE):
+
+- measured (`bench/ndef_ladder_sweep.py`, evidence in
+  `results/ndef-ladder-sweep-*.json`): cashuB-374 = 386B file =
+  1 CC read + 2 x Le254 windows = **exactly 3 reads** — budget holds,
+  no golden re-pin, `LOCK` untouched. The legacy 0x20 ladder needs 13
+  reads there and dies on the 6985 wall after read 3 (truncated).
+- why 0xFE: the card's own READ BINARY rule (capture-pinned) answers
+  Le 0x00/0xFF with 6985 — the CC advertises MLe 0x2000, which exceeds
+  the card's acceptance; the ladder clamps.
+- **cliff, documented not hacked**: files > 508B (text payload > 496
+  chars) exceed the budget under BOTH ladders — 3 reads x max 254B.
+  Real-mint cashuB tokens (2722 chars observed) do NOT fit; carrying
+  them needs either dropping the CC read or a READ_BUDGET re-pin —
+  both are separate-charter material (physical lane / LOCK).
+- physical lane untouched: `read_ndef_request` still emits the
+  evidence-pinned fixed 0x20 windows (byte-pinned by
+  `suites/test_vpicc_ladder.py::test_legacy_ladder_never_widens_windows`).
+  `tap_soak --virtual --ndef-kind=cashuB` is the only caller of the
+  mle ladder; `--ndef-kind=creqA` (default) keeps the SESSION C shape.
